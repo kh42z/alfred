@@ -118,10 +118,10 @@ func subscribeGame(msg chan *Message,  ID int) {
 }
 
 func connect(token, client, uid string) *websocket.Conn {
-	url := "ws://localhost:3000/cable"
+	url := "ws://pong:3000/cable"
 
 	req,_ := http.NewRequest("GET", url, nil)
-	req.Header.Add("Origin", "http://localhost:3000/")
+	req.Header.Add("Origin", "http://pong:3000/")
 	req.Header.Add("access-token", token)
 	req.Header.Add("client", client)
 	req.Header.Add("uid", uid)
@@ -142,7 +142,6 @@ func connect(token, client, uid string) *websocket.Conn {
 func main() {
 
 	var token, uid, client string
-
 	flag.StringVar(&token, "t", "", "access-token")
 	flag.StringVar(&client, "c", "", "client")
 	flag.StringVar(&uid, "u","69891", "uid")
