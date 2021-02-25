@@ -73,13 +73,25 @@ func receiveRoutine(ws *websocket.Conn) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		e := Event{}
+		var e map[string]interface{}
 		err = json.Unmarshal(message, &e)
 		if err != nil {
-			log.Debug("Unable to unmarshal rcv")
+			log.Error("Unable to unmarshal rcv", err)
 		}
-		if e.Type != "ping" {
-			log.Info("rcv:", string(message))
+		if t, ok := e["type"]; ok {
+			switch t {
+			case "welcome":
+				log.Infof("Successfuly connected to PongWebsocket")
+			case "confirm_subscription":
+				log.Infof("Successfuly subscribe to UserChannel")
+			case "ping":
+				break
+			default:
+				log.Info("rcv:",t,  string(message))
+
+			}
+		}else{
+			log.Error("No type key:", string(message) )
 		}
 	}
 }
@@ -96,7 +108,7 @@ func sendRoutine(ws *websocket.Conn, msg chan *Message) {
 
 
 func subscribeUser(msg chan *Message,  ID int) {
-	log.Info("Subscribing to user topic")
+	log.Debug("Subscribing to UserChannel")
 	msg <- formatSubscribeMessage("UserChannel", ID)
 }
 
@@ -117,7 +129,6 @@ func connect(token, client, uid string) *websocket.Conn {
 	if err != nil {
 		log.Fatal("dial:", err)
 	}
-	log.Infof("Connected to %s", url)
 	return ws
 }
 
