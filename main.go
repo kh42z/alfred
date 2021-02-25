@@ -2,9 +2,9 @@ package main
 
 import (
 	"encoding/json"
-	"flag"
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
+	"io/ioutil"
 	"net/http"
 	"time"
 )
@@ -14,6 +14,12 @@ type Message struct {
 	Data       string   `json:"data,omitempty"`
 	Identifier string			 `json:"identifier"`
 	errc       chan error
+}
+
+type BearerToken struct {
+	Token string `json:"access-token"`
+	Client string `json:"client"`
+	Uid string `json:"uid"`
 }
 
 type Command struct {
@@ -81,9 +87,9 @@ func receiveRoutine(ws *websocket.Conn) {
 		if t, ok := e["type"]; ok {
 			switch t {
 			case "welcome":
-				log.Infof("Successfuly connected to PongWebsocket")
+				log.Infof("Connected to PongWebsocket")
 			case "confirm_subscription":
-				log.Infof("Successfuly subscribe to UserChannel")
+				log.Infof("Subscribed to UserChannel")
 			case "ping":
 				break
 			default:
@@ -99,7 +105,7 @@ func receiveRoutine(ws *websocket.Conn) {
 func sendRoutine(ws *websocket.Conn, msg chan *Message) {
 	for {
 		m := <- msg
-		log.Info("sent:", m)
+		log.Debug("sent:", m)
 		if err := ws.WriteJSON(m); err != nil {
 			log.Error("Unable to send msg:", err)
 		}
@@ -117,22 +123,41 @@ func subscribeGame(msg chan *Message,  ID int) {
 	msg <- formatSubscribeMessage("GameChannel", ID)
 }
 
-func connect(token, client, uid string) *websocket.Conn {
-	url := "ws://pong:3000/cable"
+func getBearerToken() *BearerToken {
+	var resp *http.Response
+	for {
+		var err error
+		resp, err = http.Get("http://pong:3000/bots")
+		if err != nil {
+			time.Sleep(10 * time.Second)
+		}else{
+			break
+		}
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	var b *BearerToken
+	err = json.Unmarshal(body, &b)
+	if err != nil {
+		log.Fatal("Unable to unmarshal auth:", err)
+	}
+	return b
+}
 
+func connect() *websocket.Conn {
+	url := "ws://pong:3000/cable"
+	bearerToken := getBearerToken()
 	req,_ := http.NewRequest("GET", url, nil)
 	req.Header.Add("Origin", "http://localhost:3000/")
-	req.Header.Add("access-token", token)
-	req.Header.Add("client", client)
-	req.Header.Add("uid", uid)
-	var ws *websocket.Conn
-	var err error
-	for {
-		ws, _, err = websocket.DefaultDialer.Dial(url, req.Header)
-		if err != nil {
-			log.Error("Unable to connect:", err)
-		}
-		time.Sleep(10 * time.Second)
+	req.Header.Add("access-token", bearerToken.Token)
+	req.Header.Add("client", bearerToken.Client)
+	req.Header.Add("uid", bearerToken.Uid)
+	ws, _, err := websocket.DefaultDialer.Dial(url, req.Header)
+	if err != nil {
+		log.Error("Unable to connect:", err)
 	}
 	return ws
 }
@@ -140,14 +165,7 @@ func connect(token, client, uid string) *websocket.Conn {
 
 
 func main() {
-
-	var token, uid, client string
-	flag.StringVar(&token, "t", "", "access-token")
-	flag.StringVar(&client, "c", "", "client")
-	flag.StringVar(&uid, "u","69891", "uid")
-	flag.Parse()
-
-	ws := connect(token, client, uid)
+	ws := connect()
 	defer ws.Close()
 	sendCh := make(chan *Message)
 	go receiveRoutine(ws)
