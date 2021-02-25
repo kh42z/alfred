@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"time"
+	nested "github.com/antonfisher/nested-logrus-formatter"
 )
 
 type Message struct {
@@ -162,9 +163,15 @@ func connect() *websocket.Conn {
 	return ws
 }
 
-
+func configLogger() {
+	log.SetFormatter(&nested.Formatter{
+		HideKeys:    true,
+		TimestampFormat: "[15:04:05]",
+	})
+}
 
 func main() {
+	configLogger()
 	ws := connect()
 	defer ws.Close()
 	sendCh := make(chan *Message)
