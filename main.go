@@ -125,9 +125,14 @@ func connect(token, client, uid string) *websocket.Conn {
 	req.Header.Add("access-token", token)
 	req.Header.Add("client", client)
 	req.Header.Add("uid", uid)
-	ws, _, err := websocket.DefaultDialer.Dial(url, req.Header)
-	if err != nil {
-		log.Fatal("dial:", err)
+	var ws *websocket.Conn
+	var err error
+	for {
+		ws, _, err = websocket.DefaultDialer.Dial(url, req.Header)
+		if err != nil {
+			log.Error("Unable to connect:", err)
+		}
+		time.Sleep(10 * time.Second)
 	}
 	return ws
 }
