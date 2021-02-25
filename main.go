@@ -121,7 +121,7 @@ func connect(token, client, uid string) *websocket.Conn {
 	url := "ws://pong:3000/cable"
 
 	req,_ := http.NewRequest("GET", url, nil)
-	req.Header.Add("Origin", "http://pong:3000/")
+	req.Header.Add("Origin", "http://localhost:3000/")
 	req.Header.Add("access-token", token)
 	req.Header.Add("client", client)
 	req.Header.Add("uid", uid)
