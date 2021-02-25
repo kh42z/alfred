@@ -3,11 +3,12 @@ package main
 import (
 	"encoding/json"
 	"github.com/gorilla/websocket"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
+	"sync"
 	"time"
 	nested "github.com/antonfisher/nested-logrus-formatter"
+	log "github.com/sirupsen/logrus"
 )
 
 type Message struct {
@@ -55,25 +56,6 @@ func formatSubscribeMessage(channel string, ID int) *Message {
 	}
 }
 
-func formatReceivedMessage(text string) *Message {
-	d := Data{Message: text, Action: "received"}
-	data, err := json.Marshal(d)
-	if err != nil {
-		log.Println("Unable to marshal")
-	}
-	id, err := json.Marshal(Command{
-		Channel: "ChatChannel",
-	})
-	if err != nil {
-		log.Fatal("Unable to marshal")
-	}
-	return &Message{
-		Command: "message",
-		Identifier: string(id),
-		Data: string(data),
-	}
-}
-
 func receiveRoutine(ws *websocket.Conn) {
 	for {
 		_, message,  err := ws.ReadMessage()
@@ -104,6 +86,7 @@ func receiveRoutine(ws *websocket.Conn) {
 }
 
 func sendRoutine(ws *websocket.Conn, msg chan *Message) {
+
 	for {
 		m := <- msg
 		log.Debug("sent:", m)
@@ -171,6 +154,7 @@ func configLogger() {
 }
 
 func main() {
+	wg := sync.WaitGroup{}
 	configLogger()
 	ws := connect()
 	defer ws.Close()
@@ -180,4 +164,5 @@ func main() {
 	time.Sleep(2 * time.Second)
 	subscribeUser(sendCh, 1)
 	time.Sleep(100 * time.Second)
+	wg.Wait()
 }
