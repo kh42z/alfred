@@ -5,6 +5,7 @@ import (
 	"github.com/gorilla/websocket"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 	nested "github.com/antonfisher/nested-logrus-formatter"
@@ -48,7 +49,7 @@ func formatSubscribeMessage(channel string, ID int) *Message {
 
 	})
 	if err != nil {
-		log.Fatal("Unable to marshal")
+		log.Fatal("Unable to marshal:", err)
 	}
 	return &Message{
 		Command: "subscribe",
@@ -60,7 +61,7 @@ func receiveRoutine(ws *websocket.Conn) {
 	for {
 		_, message,  err := ws.ReadMessage()
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("Unable to rcv:", err)
 		}
 		var e map[string]interface{}
 		err = json.Unmarshal(message, &e)
@@ -96,7 +97,6 @@ func sendRoutine(ws *websocket.Conn, msg chan *Message) {
 	}
 }
 
-
 func subscribeUser(msg chan *Message,  ID int) {
 	log.Debug("Subscribing to UserChannel")
 	msg <- formatSubscribeMessage("UserChannel", ID)
@@ -111,7 +111,7 @@ func getBearerToken() *BearerToken {
 	var resp *http.Response
 	for {
 		var err error
-		resp, err = http.Get("http://pong:3000/bots")
+		resp, err = http.Get("http://pong:3000/two_factor/1?code="+ os.Getenv("ALFRED_CODE"))
 		if err != nil {
 			time.Sleep(10 * time.Second)
 		}else{
@@ -121,7 +121,7 @@ func getBearerToken() *BearerToken {
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Unable to read body: ", err)
 	}
 	var b *BearerToken
 	err = json.Unmarshal(body, &b)
