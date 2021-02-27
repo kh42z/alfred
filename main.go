@@ -16,7 +16,6 @@ type Message struct {
 	Command    string            `json:"command"`
 	Data       string   `json:"data,omitempty"`
 	Identifier string			 `json:"identifier"`
-	errc       chan error
 }
 
 type BearerToken struct {
@@ -27,26 +26,27 @@ type BearerToken struct {
 
 type Command struct {
 	Channel string `json:"channel"`
-	UserID int `json:"user_id"`
+	ID int `json:"id"`
 }
 
 type Event struct {
-	Type string `json:"type"`
 	Message    json.RawMessage    `json:"message"`
-	Data       json.RawMessage    `json:"data"`
-	Identifier *Command `json:"identifier"`
+	Identifier string `json:"identifier"`
 }
 
-type Data struct {
-	Message string `json:"message"`
+type Identifier struct {
+	Channel string `json:"channel"`
+}
+
+type UserEvent struct {
+	ID int `json:"id"`
 	Action  string `json:"action"`
 }
 
 func formatSubscribeMessage(channel string, ID int) *Message {
 	data, err := json.Marshal(Command{
 		Channel: channel,
-		UserID: ID,
-
+		ID: ID,
 	})
 	if err != nil {
 		log.Fatal("Unable to marshal:", err)
@@ -57,7 +57,26 @@ func formatSubscribeMessage(channel string, ID int) *Message {
 	}
 }
 
-func receiveRoutine(ws *websocket.Conn) {
+func IdentifyChannel(event *Event, ch chan *Message) {
+	var i Identifier
+	err := json.Unmarshal([]byte(event.Identifier), &i)
+	if err != nil {
+		log.Error("Unable to unmarshal Identifier", i)
+		return
+	}
+	if i.Channel == "UserChannel" {
+		log.Info("I received a personnal event!")
+		var personnalEvent UserEvent
+		err := json.Unmarshal(event.Message, &personnalEvent)
+		if err != nil {
+			log.Error("Unable to unmarshal userchannel:", err)
+		}
+		subscribeGame(ch, personnalEvent.ID)
+	}
+}
+
+
+func receiveRoutine(ws *websocket.Conn, ch chan *Message) {
 	for {
 		_, message,  err := ws.ReadMessage()
 		if err != nil {
@@ -73,16 +92,29 @@ func receiveRoutine(ws *websocket.Conn) {
 			case "welcome":
 				log.Infof("Connected to PongWebsocket")
 			case "confirm_subscription":
-				log.Infof("Subscribed to UserChannel")
+				log.Infof("Subscribed to %s", e["identifier"])
 			case "ping":
-				break
 			default:
 				log.Info("rcv:",t,  string(message))
-
 			}
 		}else{
-			log.Error("No type key:", string(message) )
+			log.Debug("RawMessage:", string(message) )
+			var e Event
+			err := json.Unmarshal(message, &e)
+			if err != nil {
+				log.Error("Unable to unmarshal Event:", err)
+			}else{
+				IdentifyChannel(&e, ch)
+			}
 		}
+	}
+}
+
+func parseMessage(message []byte){
+	var m *Message
+	err := json.Unmarshal(message, &m)
+	if err != nil {
+		log.Error("Unable to unmarshal message", err)
 	}
 }
 
@@ -111,7 +143,7 @@ func getBearerToken() *BearerToken {
 	var resp *http.Response
 	for {
 		var err error
-		resp, err = http.Get("http://pong:3000/two_factor/1?code="+ os.Getenv("ALFRED_CODE"))
+		resp, err = http.Get("http://pong:3000/two_factor/1?code=" + os.Getenv("ALFRED_CODE"))
 		if err != nil {
 			time.Sleep(10 * time.Second)
 		}else{
@@ -159,7 +191,7 @@ func main() {
 	ws := connect()
 	defer ws.Close()
 	sendCh := make(chan *Message)
-	go receiveRoutine(ws)
+	go receiveRoutine(ws, sendCh)
 	go sendRoutine(ws, sendCh)
 	time.Sleep(2 * time.Second)
 	subscribeUser(sendCh, 1)
