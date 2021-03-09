@@ -64,7 +64,8 @@ func IdentifyChannel(event *Event, ch chan *Message) {
 		log.Error("Unable to unmarshal Identifier", i)
 		return
 	}
-	if i.Channel == "UserChannel" {
+	switch i.Channel {
+	case "UserChannel":
 		log.Info("I received a personnal event!")
 		var personnalEvent UserEvent
 		err := json.Unmarshal(event.Message, &personnalEvent)
@@ -72,6 +73,8 @@ func IdentifyChannel(event *Event, ch chan *Message) {
 			log.Error("Unable to unmarshal userchannel:", err)
 		}
 		subscribeGame(ch, personnalEvent.ID)
+	case "ChatChannel":
+		log.Info("I received a chat message: ", string(event.Message))
 	}
 }
 
@@ -139,6 +142,11 @@ func subscribeGame(msg chan *Message,  ID int) {
 	msg <- formatSubscribeMessage("GameChannel", ID)
 }
 
+func subscribeChat(msg chan *Message,  ID int) {
+	log.Info("Subscribing to Chat topic")
+	msg <- formatSubscribeMessage("ChatChannel", ID)
+}
+
 func getBearerToken() *BearerToken {
 	var resp *http.Response
 	for {
@@ -195,6 +203,7 @@ func main() {
 	go sendRoutine(ws, sendCh)
 	time.Sleep(2 * time.Second)
 	subscribeUser(sendCh, 1)
+	subscribeChat(sendCh, 1)
 	time.Sleep(100 * time.Second)
 	wg.Wait()
 }
