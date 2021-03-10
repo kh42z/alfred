@@ -56,6 +56,11 @@ type ChatMessage struct {
 	Action string `json:"action"`
 }
 
+type MessageContent struct {
+	Content string `json:"content"`
+	SenderID int `json:"sender_id"`
+}
+
 func formatChatMessage(channel string, ID int) *Message {
 	data, err := json.Marshal(Command{
 		Channel: channel,
@@ -105,8 +110,13 @@ func IdentifyChannel(event *Event, ch chan *Message) {
 		}
 		subscribeOnEvent(ch, &personnalEvent)
 	case "ChatChannel":
-		log.Infof("I received a chat message: (%s)\n", string(event.Message))
-		if (string(event.Message) != "\"yes\"") {
+		var content MessageContent
+		err := json.Unmarshal(event.Message, &content)
+		if err != nil {
+			log.Error("Unable to unmarshal tmp", err)
+		}
+		log.Infof("I received a chat message from user_%d: (%s)\n", content.SenderID, content.Content)
+		if content.SenderID != 1 {
 			sendChatResponse(ch, i.ID)
 
 		}
@@ -152,7 +162,7 @@ func receiveRoutine(c *Client, wg *sync.WaitGroup) {
 				log.Info("rcv:",t,  string(message))
 			}
 		}else{
-			log.Info("RawMessage:", string(message) )
+			log.Debug("RawMessage:", string(message) )
 			var e Event
 			err := json.Unmarshal(message, &e)
 			if err != nil {
@@ -177,7 +187,7 @@ func sendRoutine(c *Client, wg *sync.WaitGroup) {
 	for {
 		select {
 		case m := <- c.sendCh:
-			log.Info("sent:", m)
+			log.Debug("sent:", m)
 			if err := c.ws.WriteJSON(m); err != nil {
 				log.Error("Unable to send msg:", err)
 			}
