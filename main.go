@@ -102,18 +102,26 @@ func IdentifyChannel(event *Event, ch chan *Message) {
 		if err != nil {
 			log.Error("Unable to unmarshal userchannel:", err)
 		}
-		subscribeGame(ch, personnalEvent.ID)
+		subscribeOnEvent(ch, &personnalEvent)
 	case "ChatChannel":
 		log.Info("I received a chat message: ", string(event.Message))
 		sendChatResponse(ch)
 	default:
-		log.Info("Unknow chan")
-
+		log.Info("Unknown chan")
 	}
 }
 
 
-
+func subscribeOnEvent(ch chan *Message, p *UserEvent) {
+	switch p.Action {
+	case "game_invitation":
+		subscribeGame(ch, p.ID)
+	case "chat_invitation":
+		subscribeChat(ch, p.ID)
+	default:
+		log.Info("SubscribeOnEvent: Unknown action")
+	}
+}
 
 
 func receiveRoutine(c *Client, wg *sync.WaitGroup) {
