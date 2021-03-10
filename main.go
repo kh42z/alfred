@@ -105,8 +105,11 @@ func IdentifyChannel(event *Event, ch chan *Message) {
 		}
 		subscribeOnEvent(ch, &personnalEvent)
 	case "ChatChannel":
-		log.Info("I received a chat message: ", string(event.Message))
-		sendChatResponse(ch, i.ID)
+		log.Infof("I received a chat message: (%s)\n", string(event.Message))
+		if (string(event.Message) != "\"yes\"") {
+			sendChatResponse(ch, i.ID)
+
+		}
 	default:
 		log.Info("Unknown chan")
 	}
