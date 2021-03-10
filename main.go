@@ -12,9 +12,16 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+type Client struct {
+	ws *websocket.Conn
+	rcvCh chan *Message
+	sendCh chan *Message
+	pongCh chan bool
+}
+
 type Message struct {
 	Command    string            `json:"command"`
-	Data       string   `json:"data,omitempty"`
+	Data       string   		 `json:"data,omitempty"`
 	Identifier string			 `json:"identifier"`
 }
 
@@ -41,6 +48,29 @@ type Identifier struct {
 type UserEvent struct {
 	ID int `json:"id"`
 	Action  string `json:"action"`
+}
+
+type ChatMessage struct {
+	Message string `json:"message"`
+	Action string `json:"action"`
+}
+
+func formatChatMessage(channel string, ID int) *Message {
+	data, err := json.Marshal(Command{
+		Channel: channel,
+		ID: ID,
+	})
+	if err != nil {
+		log.Fatal("Unable to marshal:", err)
+	}
+	m := ChatMessage{Message: "yes", Action: "received"}
+	msg, _ := json.Marshal(m)
+
+	return &Message{
+		Command: "message",
+		Identifier: string(data),
+		Data: string(msg),
+	}
 }
 
 func formatSubscribeMessage(channel string, ID int) *Message {
@@ -75,13 +105,21 @@ func IdentifyChannel(event *Event, ch chan *Message) {
 		subscribeGame(ch, personnalEvent.ID)
 	case "ChatChannel":
 		log.Info("I received a chat message: ", string(event.Message))
+		sendChatResponse(ch)
+	default:
+		log.Info("Unknow chan")
+
 	}
 }
 
 
-func receiveRoutine(ws *websocket.Conn, ch chan *Message) {
+
+
+
+func receiveRoutine(c *Client, wg *sync.WaitGroup) {
+	wg.Add(1)
 	for {
-		_, message,  err := ws.ReadMessage()
+		_, message,  err := c.ws.ReadMessage()
 		if err != nil {
 			log.Fatal("Unable to rcv:", err)
 		}
@@ -97,17 +135,18 @@ func receiveRoutine(ws *websocket.Conn, ch chan *Message) {
 			case "confirm_subscription":
 				log.Infof("Subscribed to %s", e["identifier"])
 			case "ping":
+				c.pongCh <- true
 			default:
 				log.Info("rcv:",t,  string(message))
 			}
 		}else{
-			log.Debug("RawMessage:", string(message) )
+			log.Info("RawMessage:", string(message) )
 			var e Event
 			err := json.Unmarshal(message, &e)
 			if err != nil {
 				log.Error("Unable to unmarshal Event:", err)
 			}else{
-				IdentifyChannel(&e, ch)
+				IdentifyChannel(&e, c.sendCh)
 			}
 		}
 	}
@@ -121,15 +160,25 @@ func parseMessage(message []byte){
 	}
 }
 
-func sendRoutine(ws *websocket.Conn, msg chan *Message) {
-
+func sendRoutine(c *Client, wg *sync.WaitGroup) {
+	wg.Add(1)
 	for {
-		m := <- msg
-		log.Debug("sent:", m)
-		if err := ws.WriteJSON(m); err != nil {
-			log.Error("Unable to send msg:", err)
+		select {
+		case m := <- c.sendCh:
+			log.Info("sent:", m)
+			if err := c.ws.WriteJSON(m); err != nil {
+				log.Error("Unable to send msg:", err)
+			}
+		case <- c.pongCh:
+			if err := c.ws.WriteMessage(websocket.PongMessage, []byte{}); err != nil {
+				log.Error("Unable to send ping:", err)
+			}
 		}
 	}
+}
+
+func sendChatResponse(msg chan *Message) {
+	msg <- formatChatMessage("ChatChannel", 1)
 }
 
 func subscribeUser(msg chan *Message,  ID int) {
@@ -196,14 +245,16 @@ func configLogger() {
 func main() {
 	wg := sync.WaitGroup{}
 	configLogger()
-	ws := connect()
-	defer ws.Close()
-	sendCh := make(chan *Message)
-	go receiveRoutine(ws, sendCh)
-	go sendRoutine(ws, sendCh)
+	c := &Client{
+		sendCh: make(chan *Message, 20),
+		rcvCh: make(chan *Message),
+		pongCh: make(chan bool) }
+	c.ws = connect()
+	defer c.ws.Close()
+	go receiveRoutine(c, &wg)
+	go sendRoutine(c, &wg)
 	time.Sleep(2 * time.Second)
-	subscribeUser(sendCh, 1)
-	subscribeChat(sendCh, 1)
-	time.Sleep(100 * time.Second)
+	subscribeUser(c.sendCh, 1)
+	subscribeChat(c.sendCh, 1)
 	wg.Wait()
 }
