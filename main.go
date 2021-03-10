@@ -43,6 +43,7 @@ type Event struct {
 
 type Identifier struct {
 	Channel string `json:"channel"`
+	ID int `json:"id"`
 }
 
 type UserEvent struct {
@@ -105,7 +106,7 @@ func IdentifyChannel(event *Event, ch chan *Message) {
 		subscribeOnEvent(ch, &personnalEvent)
 	case "ChatChannel":
 		log.Info("I received a chat message: ", string(event.Message))
-		sendChatResponse(ch)
+		sendChatResponse(ch, i.ID)
 	default:
 		log.Info("Unknown chan")
 	}
@@ -185,8 +186,8 @@ func sendRoutine(c *Client, wg *sync.WaitGroup) {
 	}
 }
 
-func sendChatResponse(msg chan *Message) {
-	msg <- formatChatMessage("ChatChannel", 1)
+func sendChatResponse(msg chan *Message, id int) {
+	msg <- formatChatMessage("ChatChannel", id)
 }
 
 func subscribeUser(msg chan *Message,  ID int) {
