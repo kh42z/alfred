@@ -1,7 +1,7 @@
 package main
 
 import (
-	"alfred/alfred"
+	"alfred/robot"
 	nested "github.com/antonfisher/nested-logrus-formatter"
 	log "github.com/sirupsen/logrus"
 	"os"
@@ -16,7 +16,7 @@ func configLogger() {
 
 func main() {
 	configLogger()
-	hal :=  alfred.NewBot()
+	hal :=  robot.NewBot()
 	hal.Start("pong:3000", os.Getenv("ALFRED_CODE"))
 	hal.SubscribeUser(1)
 	hal.InitChatSubscriptions("pong:3000")

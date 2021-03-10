@@ -1,4 +1,4 @@
-package alfred
+package robot
 
 import log "github.com/sirupsen/logrus"
 

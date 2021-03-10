@@ -1,4 +1,4 @@
-package alfred
+package robot
 
 import (
 	"encoding/json"
