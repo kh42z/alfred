@@ -12,12 +12,15 @@ type Bot struct {
 	rcvCh chan *Message
 	sendCh chan *Message
 	pongCh chan bool
+	statsCh chan bool
 	bearerToken *BearerToken
 	wg *sync.WaitGroup
+	host string
 }
 
+type onMessageFn func(*Event)
 
-func (b *Bot) receiveRoutine() {
+func (b *Bot) receiveRoutine(onMessage onMessageFn) {
 	b.wg.Add(1)
 	for {
 		_, message,  err := b.ws.ReadMessage()
@@ -49,7 +52,7 @@ func (b *Bot) receiveRoutine() {
 				log.Error("Unable to unmarshal Event:", err)
 				return
 			}
-			b.identifyChannel(&e)
+			onMessage(&e)
 		}
 	}
 }
@@ -104,18 +107,20 @@ func (b *Bot) sendRoutine() {
 	}
 }
 
-func NewBot() *Bot {
+func NewBot(host string) *Bot {
 	return &Bot{
+		host: host,
 		sendCh: make(chan *Message, 20),
 		rcvCh: make(chan *Message),
 		pongCh: make(chan bool),
+		statsCh: make(chan bool),
 		wg: &sync.WaitGroup{},
 	}
 }
 
-func (b *Bot) Start(url string, code string) {
-	b.connect(url, code)
-	go b.receiveRoutine()
+func (b *Bot) Start(code string) {
+	b.connect(code)
+	go b.receiveRoutine(b.identifyChannel)
 	go b.sendRoutine()
 }
 

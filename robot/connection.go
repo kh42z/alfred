@@ -19,15 +19,15 @@ type Chat struct {
 	ID int `json:"id"`
 }
 
-func (b *Bot) connect(host string, code string) {
-	b.bearerToken = getBearerToken(host, code)
-	req,_ := http.NewRequest("GET", "http://"+ host, nil)
+func (b *Bot) connect(code string) {
+	b.bearerToken = getBearerToken(b.host, code)
+	req,_ := http.NewRequest("GET", "http://"+ b.host, nil)
 	req.Header.Add("Origin", "http://localhost:3000/")
 	req.Header.Add("access-token", b.bearerToken.Token)
 	req.Header.Add("client", b.bearerToken.Client)
 	req.Header.Add("uid", b.bearerToken.Uid)
 	var err error
-	b.ws, _, err = websocket.DefaultDialer.Dial("ws://"+ host + "/cable", req.Header)
+	b.ws, _, err = websocket.DefaultDialer.Dial("ws://"+ b.host + "/cable", req.Header)
 	if err != nil {
 		log.Fatal("Unable to connect to websocket:", err)
 	}

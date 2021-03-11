@@ -16,8 +16,8 @@ func configLogger() {
 
 func main() {
 	configLogger()
-	hal :=  robot.NewBot()
-	hal.Start("pong:3000", os.Getenv("ALFRED_CODE"))
+	hal :=  robot.NewBot("pong:3000")
+	hal.Start(os.Getenv("ALFRED_CODE"))
 	hal.SubscribeUser(1)
 	hal.InitChatSubscriptions("pong:3000")
 	hal.Wait()
