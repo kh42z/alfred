@@ -1,10 +1,7 @@
 package robot
 
 import (
-	"bytes"
 	log "github.com/sirupsen/logrus"
-	"io/ioutil"
-	"net/http"
 	"time"
 )
 
@@ -19,23 +16,7 @@ func (b *Bot) withWS() {
 }
 
 func (b *Bot) withHTTP() {
-	jsonStr := []byte(`{"content":"yes"}`)
-	req, err := http.NewRequest("POST", "http://" + b.host + "/api/chats/1/messages", bytes.NewBuffer(jsonStr))
-	req.Header.Add("Origin", "http://" + b.host)
-	req.Header.Add("access-token", b.bearerToken.Token)
-	req.Header.Add("content-type","application/json")
-	req.Header.Add("client", b.bearerToken.Client)
-	req.Header.Add("uid", b.bearerToken.Uid)
-	if err != nil {
-		log.Fatal("unable to fmt request", err)
-	}
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		panic(err)
-	}
-	defer resp.Body.Close()
-	ioutil.ReadAll(resp.Body)
+	b.DoPost(`{ "content": "yes" }`, "/chats/1/messages")
 }
 
 func (b *Bot) generateStats(requestNb int,sendMessage sendMessageFn) {

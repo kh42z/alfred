@@ -24,6 +24,8 @@ func (b *Bot) subscribeOnEvent(p *UserEvent) {
 		b.SubscribeGame(p.ID)
 	case "chat_invitation":
 		b.SubscribeChat(p.ID)
+	case "guild_invitation":
+		b.join_guild(p.ID)
 	default:
 		log.Info("SubscribeOnEvent: Unknown action")
 	}
