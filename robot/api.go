@@ -37,6 +37,6 @@ func (b *Bot)DoPost(body, target string) {
 	log.Info("I received the following response: "+ string(strBody))
 }
 
-func (b *Bot)join_guild(id int){
-	b.DoPost("", "/guilds/" + strconv.Itoa(id)  +"/members")
+func (b *Bot)join_guild(guild_id int){
+	b.DoPost(`{ "user_id": 1 }`, "/guilds/" + strconv.Itoa(guild_id)  +"/members")
 }
