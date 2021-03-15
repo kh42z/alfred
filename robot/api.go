@@ -38,5 +38,5 @@ func (b *Bot)DoPost(body, target string) {
 }
 
 func (b *Bot)join_guild(guild_id int){
-	b.DoPost(`{ "user_id": 1 }`, "/guilds/" + strconv.Itoa(guild_id)  +"/members")
+	b.DoPost(`{ "user_id": 1 }`, "/guilds/" + strconv.Itoa(guild_id)  +"/pending_invites")
 }
