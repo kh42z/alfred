@@ -19,6 +19,6 @@ func main() {
 	hal :=  robot.NewBot("pong:3000")
 	hal.Start(os.Getenv("ALFRED_CODE"))
 	hal.SubscribeUser(1)
-	hal.InitChatSubscriptions("pong:3000")
+	hal.InitChatSubscriptions()
 	hal.Wait()
 }

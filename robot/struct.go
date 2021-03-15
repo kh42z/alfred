@@ -8,8 +8,6 @@ type Message struct {
 	Identifier string			 `json:"identifier"`
 }
 
-
-
 type Command struct {
 	Channel string `json:"channel"`
 	ID int `json:"id"`

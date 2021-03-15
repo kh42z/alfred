@@ -8,14 +8,14 @@ import (
 )
 
 type Bot struct {
-	ws *websocket.Conn
-	rcvCh chan *Message
-	sendCh chan *Message
-	pongCh chan bool
+	ws      *websocket.Conn
+	rcvCh   chan *Message
+	sendCh  chan *Message
+	pongCh  chan bool
 	statsCh chan bool
-	bearerToken *BearerToken
-	wg *sync.WaitGroup
-	host string
+	api     *PongAPI
+	wg      *sync.WaitGroup
+	host    string
 }
 
 type onMessageFn func(*Event)

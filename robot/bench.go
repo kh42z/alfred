@@ -16,7 +16,7 @@ func (b *Bot) withWS() {
 }
 
 func (b *Bot) withHTTP() {
-	b.DoPost(`{ "content": "yes" }`, "/chats/1/messages")
+	b.api.DoPost(`{ "content": "yes" }`,b.host, "/chats/1/messages")
 }
 
 func (b *Bot) generateStats(requestNb int,sendMessage sendMessageFn) {

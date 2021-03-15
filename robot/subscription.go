@@ -9,7 +9,7 @@ func (b *Bot) SubscribeUser(ID int) {
 }
 
 func (b *Bot) SubscribeGame(ID int) {
-	log.Info("Subscribing to Game topic")
+	log.Info("I joined game:", ID)
 	b.sendCh <- formatSubscribeMessage("GameChannel", ID)
 }
 
@@ -25,14 +25,14 @@ func (b *Bot) subscribeOnEvent(p *UserEvent) {
 	case "chat_invitation":
 		b.SubscribeChat(p.ID)
 	case "guild_invitation":
-		b.join_guild(p.ID)
+		b.JoinGuild(p.ID)
 	default:
 		log.Info("SubscribeOnEvent: Unknown action")
 	}
 }
 
-func (b *Bot) InitChatSubscriptions(host string) {
-	for _, chat := range b.retrieveSubscriptions(host) {
+func (b *Bot) InitChatSubscriptions() {
+	for _, chat := range b.retrieveSubscriptions() {
 		b.SubscribeChat(chat.ID)
 	}
 }

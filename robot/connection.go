@@ -9,35 +9,26 @@ import (
 	"time"
 )
 
-type BearerToken struct {
-	Token string `json:"access-token"`
-	Client string `json:"client"`
-	Uid string `json:"uid"`
-}
-
 type Chat struct {
 	ID int `json:"id"`
 }
 
 func (b *Bot) connect(code string) {
-	b.bearerToken = getBearerToken(b.host, code)
-	req,_ := http.NewRequest("GET", "http://"+ b.host, nil)
-	req.Header.Add("Origin", "http://localhost:3000/")
-	req.Header.Add("access-token", b.bearerToken.Token)
-	req.Header.Add("client", b.bearerToken.Client)
-	req.Header.Add("uid", b.bearerToken.Uid)
+	b.twoFactorSignIn(code)
+	req,_ := http.NewRequest("GET", "http://" + b.host, nil)
+	b.api.setReqHeaders(req, b.host)
 	var err error
-	b.ws, _, err = websocket.DefaultDialer.Dial("ws://"+ b.host + "/cable", req.Header)
+	b.ws, _, err = websocket.DefaultDialer.Dial("ws://" + b.host + "/cable", req.Header)
 	if err != nil {
 		log.Fatal("Unable to connect to websocket:", err)
 	}
 }
 
-func getBearerToken(host, code string) *BearerToken {
+func (b *Bot) twoFactorSignIn(code string) {
 	var resp *http.Response
 	for {
 		var err error
-		resp, err = http.Get("http://" + host + "/two_factor/1?code=" + code)
+		resp, err = http.Get("http://" + b.host + "/two_factor/1?code=" + code)
 		if err != nil {
 			time.Sleep(10 * time.Second)
 		}else{
@@ -49,31 +40,16 @@ func getBearerToken(host, code string) *BearerToken {
 	if err != nil {
 		log.Fatal("Unable to read body: ", err)
 	}
-	var b *BearerToken
-	err = json.Unmarshal(body, &b)
+	err = json.Unmarshal(body, &b.api)
 	if err != nil {
 		log.Fatal("Unable to unmarshal auth:", err)
 	}
-	return b
 }
 
-func (b *Bot) retrieveSubscriptions(host string) []*Chat {
-	client := &http.Client{}
-	req,_ := http.NewRequest("GET", "http://"+  host + "/api/chats?participant_id=1", nil)
-	req.Header.Add("Origin", "http://" + host)
-	req.Header.Add("access-token", b.bearerToken.Token)
-	req.Header.Add("client", b.bearerToken.Client)
-	req.Header.Add("uid", b.bearerToken.Uid)
-	resp, err := client.Do(req)
+func (b *Bot) retrieveSubscriptions() []*Chat {
+	body, err := b.api.DoGet(b.host,"/chats?participant_id=1" )
 	if err != nil {
-		log.Error("Unable to get Channels:", err)
-		return nil
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Error("Unable to read body: ", err)
-		return nil
+		log.Fatal("Unable to retrieve chatrooms subscriptions", err)
 	}
 	var chats []*Chat
 	err = json.Unmarshal(body, &chats)
