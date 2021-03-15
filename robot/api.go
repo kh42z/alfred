@@ -62,7 +62,7 @@ func (p *PongAPI) DoPost(body, host, target string) ([]byte, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != 201 {
 		return nil, errors.New("API responded with status code: "+ strconv.Itoa(resp.StatusCode))
 	}
 	return readResponse(resp), nil
