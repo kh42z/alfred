@@ -14,7 +14,7 @@ type PongAPI struct {
 	Token string `json:"access-token"`
 	Client string `json:"client"`
 	Uid string `json:"uid"`
-	UserID int
+	UserID int `json:"-"`
 }
 
 

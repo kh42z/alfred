@@ -27,9 +27,11 @@ func (b *Bot) connect(code string) {
 
 func (b *Bot) twoFactorSignIn(code string) {
 	var resp *http.Response
+	url := fmt.Sprintf("http://%s/two_factor/%d/?code=%s" , b.host, b.api.UserID, code)
+	log.Info("URL ", url)
 	for {
 		var err error
-		resp, err = http.Get(fmt.Sprintf("http://%s/two_factor/%b/?code=%s" , b.host, b.api.UserID, code))
+		resp, err = http.Get(url)
 		if err != nil {
 			time.Sleep(10 * time.Second)
 		}else{
@@ -37,6 +39,9 @@ func (b *Bot) twoFactorSignIn(code string) {
 		}
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		log.Fatal("Unable to authentifcate: ", resp.StatusCode)
+	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatal("Unable to read body: ", err)
