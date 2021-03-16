@@ -2,6 +2,7 @@ package robot
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
@@ -28,7 +29,7 @@ func (b *Bot) twoFactorSignIn(code string) {
 	var resp *http.Response
 	for {
 		var err error
-		resp, err = http.Get("http://" + b.host + "/two_factor/1?code=" + code)
+		resp, err = http.Get(fmt.Sprintf("http://%s/two_factor/%b/?code=%s" , b.host, b.api.UserID, code))
 		if err != nil {
 			time.Sleep(10 * time.Second)
 		}else{
@@ -47,7 +48,7 @@ func (b *Bot) twoFactorSignIn(code string) {
 }
 
 func (b *Bot) retrieveSubscriptions() []*Chat {
-	body, err := b.api.DoGet(b.host,"/chats?participant_id=1" )
+	body, err := b.api.DoGet(b.host, fmt.Sprintf("/chats?participant_id=%b", b.api.UserID))
 	if err != nil {
 		log.Fatal("Unable to retrieve chatrooms subscriptions", err)
 	}

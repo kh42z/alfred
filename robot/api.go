@@ -14,20 +14,21 @@ type PongAPI struct {
 	Token string `json:"access-token"`
 	Client string `json:"client"`
 	Uid string `json:"uid"`
+	UserID int
 }
 
 
 func (b *Bot) JoinGuild(guild_id int){
-	_, err := b.api.DoPost(`{ "user_id": 1 }`, b.host,"/guilds/" + strconv.Itoa(guild_id)  +"/members")
+	_, err := b.api.DoPost(`{ "user_id": `+ strconv.Itoa(b.api.UserID) + ` }`, b.host,"/guilds/" + strconv.Itoa(guild_id)  +"/members")
 	if err != nil {
 		log.Error("Unable to join guild", err)
 		return
 	}
-	resp, err := b.api.DoGet(b.host, "/api/guilds/" + strconv.Itoa(guild_id))
+	resp, err := b.api.DoGet(b.host, "/guilds/" + strconv.Itoa(guild_id))
 	var e map[string]interface{}
-	json.Unmarshal(resp, e)
+	json.Unmarshal(resp, &e)
 	if name, ok := e["name"]; ok {
-		log.Info("I joined the guild", name)
+		log.Info("I joined the guild [", name, "]")
 	}
 }
 
@@ -50,7 +51,7 @@ func (p *PongAPI)DoGet(host, target string) ([]byte, error) {
 func (p *PongAPI) DoPost(body, host, target string) ([]byte, error) {
 	jsonStr := []byte(body)
 	url := "http://" + host + "/api" + target
-	log.Info("I'm sending a request on: ", url)
+	log.Debug("I'm sending a request on: ", url)
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
 	if err != nil {
 		return nil, err

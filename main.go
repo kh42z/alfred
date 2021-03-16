@@ -5,6 +5,7 @@ import (
 	nested "github.com/antonfisher/nested-logrus-formatter"
 	log "github.com/sirupsen/logrus"
 	"os"
+	"strconv"
 )
 
 func configLogger() {
@@ -14,11 +15,23 @@ func configLogger() {
 	})
 }
 
+func getEnv(key string, defaultVal string) string {
+	if value, exists := os.LookupEnv(key); exists {
+		return value
+	}
+	return defaultVal
+}
+
 func main() {
 	configLogger()
-	hal :=  robot.NewBot("pong:3000")
+	strUid := getEnv("ALFRED_UID", "1")
+	uid, err := strconv.Atoi(strUid)
+	if err != nil {
+		log.Fatal("Unable to cast uid to int:", err)
+	}
+	hal :=  robot.NewBot("pong:3000", uid)
 	hal.Start(os.Getenv("ALFRED_CODE"))
-	hal.SubscribeUser(1)
+	hal.SubscribeUser(uid)
 	hal.InitChatSubscriptions()
 	hal.Wait()
 }

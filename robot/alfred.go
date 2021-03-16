@@ -82,7 +82,7 @@ func (b *Bot) identifyChannel(event *Event) {
 			return
 		}
 		log.Infof("I received a chatMessage > user_%d: [%s]", content.SenderID, content.Content)
-		if content.SenderID != 1 {
+		if content.SenderID != b.api.UserID {
 			sendChatResponse(b.sendCh, i.ID)
 		}
 	default:
@@ -107,13 +107,14 @@ func (b *Bot) sendRoutine() {
 	}
 }
 
-func NewBot(host string) *Bot {
+func NewBot(host string, uid int) *Bot {
 	return &Bot{
 		host: host,
 		sendCh: make(chan *Message, 20),
 		rcvCh: make(chan *Message),
 		pongCh: make(chan bool),
 		statsCh: make(chan bool),
+		api: &PongAPI{ UserID: uid},
 		wg: &sync.WaitGroup{},
 	}
 }

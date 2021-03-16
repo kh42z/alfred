@@ -9,7 +9,7 @@ func (b *Bot) SubscribeUser(ID int) {
 }
 
 func (b *Bot) SubscribeGame(ID int) {
-	log.Info("I joined game:", ID)
+	log.Info("I joined game_id [", ID, "]")
 	b.sendCh <- formatSubscribeMessage("GameChannel", ID)
 }
 
