@@ -28,7 +28,6 @@ func (b *Bot) connect(code string) {
 func (b *Bot) twoFactorSignIn(code string) {
 	var resp *http.Response
 	url := fmt.Sprintf("http://%s/two_factor/%d/?code=%s" , b.host, b.api.UserID, code)
-	log.Info("URL ", url)
 	for {
 		var err error
 		resp, err = http.Get(url)
