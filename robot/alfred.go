@@ -85,6 +85,14 @@ func (b *Bot) identifyChannel(event *Event) {
 		if content.SenderID != b.api.UserID {
 			sendChatResponse(b.sendCh, i.ID)
 		}
+	case "GameChannel":
+		var state GameState
+		err := json.Unmarshal(event.Message, &state)
+		if err != nil {
+			log.Error("Unable to unmarshal content", err)
+			return
+		}
+		log.Info("The ball is moving: ",state.Ball.X, state.Ball.Y)
 	default:
 		log.Info("Unknown chan")
 	}

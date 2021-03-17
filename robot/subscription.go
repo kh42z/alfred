@@ -1,6 +1,10 @@
 package robot
 
-import log "github.com/sirupsen/logrus"
+import (
+	log "github.com/sirupsen/logrus"
+	"math/rand"
+	"time"
+)
 
 
 func (b *Bot) SubscribeUser(ID int) {
@@ -21,6 +25,8 @@ func (b *Bot) SubscribeChat(ID int) {
 func (b *Bot) subscribeOnEvent(p *UserEvent) {
 	switch p.Action {
 	case "game_invitation":
+		// Race condition
+		time.Sleep(time.Duration(rand.Intn(3)) + 1 * time.Second)
 		b.SubscribeGame(p.ID)
 	case "chat_invitation":
 		b.SubscribeChat(p.ID)
