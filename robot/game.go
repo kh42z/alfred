@@ -8,6 +8,8 @@ type Player struct {
 type Ball struct {
 	X int `json:"x"`
 	Y int `json:"y"`
+	Up bool `json:up`
+	Left bool `json:left`
 }
 
 type GameState struct {

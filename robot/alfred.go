@@ -92,7 +92,9 @@ func (b *Bot) identifyChannel(event *Event) {
 			log.Error("Unable to unmarshal content", err)
 			return
 		}
-		log.Info("The ball is moving: ",state.Ball.X, state.Ball.Y)
+		if state.Ball != nil {
+			log.Infof("The ball (%d, %d) is moving (up: %t, left: %t)",state.Ball.X, state.Ball.Y, state.Ball.Up, state.Ball.Left)
+		}
 	default:
 		log.Info("Unknown chan")
 	}
