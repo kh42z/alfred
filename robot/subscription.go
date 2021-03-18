@@ -4,7 +4,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-
 func (b *Bot) SubscribeUser(ID int) {
 	log.Debug("Subscribing to UserChannel")
 	b.sendCh <- formatSubscribeMessage("UserChannel", ID)
@@ -15,17 +14,22 @@ func (b *Bot) SubscribeGame(ID int) {
 	b.sendCh <- formatSubscribeMessage("GameChannel", ID)
 }
 
+func (b *Bot) SubscribeActivity() {
+	log.Info("Subscribing to ActivtyChannel")
+	b.sendCh <- formatSubscribeMessage("ActivityChannel", 1)
+}
+
 func (b *Bot) SubscribeChat(ID int) {
-	log.Debug("Subscribing to Chat topic")
+	log.Debug("Subscribing to a ChatRoom")
 	b.sendCh <- formatSubscribeMessage("ChatChannel", ID)
 }
 
 func (b *Bot) subscribeOnEvent(p *UserEvent) {
 	switch p.Action {
 	case "game_won":
-		log.Info("I just won a game :) ", p.ID)
+		log.Infof("I just won this game [%d]", p.ID)
 	case "game_lost":
-		log.Info("I just lost a game :< ", p.ID)
+		log.Infof("I just lost a game [%d]", p.ID)
 	case "game_invitation":
 		b.SubscribeGame(p.ID)
 	case "chat_invitation":

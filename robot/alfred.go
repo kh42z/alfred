@@ -18,6 +18,27 @@ type Bot struct {
 	host    string
 }
 
+type Message struct {
+	Command    string            `json:"command"`
+	Data       string   		 `json:"data,omitempty"`
+	Identifier string			 `json:"identifier"`
+}
+
+type Command struct {
+	Channel string `json:"channel"`
+	ID int `json:"id"`
+}
+
+type Event struct {
+	Message    json.RawMessage    `json:"message"`
+	Identifier string `json:"identifier"`
+}
+
+type Identifier struct {
+	Channel string `json:"channel"`
+	ID int `json:"id"`
+}
+
 type onMessageFn func(*Event)
 
 func (b *Bot) receiveRoutine(onMessage onMessageFn) {
@@ -66,35 +87,13 @@ func (b *Bot) identifyChannel(event *Event) {
 	}
 	switch i.Channel {
 	case "UserChannel":
-		log.Info("I received a personnal event!")
-		var personnalEvent UserEvent
-		err := json.Unmarshal(event.Message, &personnalEvent)
-		if err != nil {
-			log.Error("Unable to unmarshal userchannel:", err)
-			return
-		}
-		b.subscribeOnEvent(&personnalEvent)
+		b.UserNotification(event.Message)
 	case "ChatChannel":
-		var content MessageContent
-		err := json.Unmarshal(event.Message, &content)
-		if err != nil {
-			log.Error("Unable to unmarshal content", err)
-			return
-		}
-		log.Infof("I received a chatMessage > user_%d: [%s]", content.SenderID, content.Content)
-		if content.SenderID != b.api.UserID {
-			sendChatResponse(b.sendCh, i.ID)
-		}
+		b.ChatResponse(event.Message, i.ID)
+	case "ActivityChannel":
+		ActivityUpdate(event.Message)
 	case "GameChannel":
-		var state GameState
-		err := json.Unmarshal(event.Message, &state)
-		if err != nil {
-			log.Error("Unable to unmarshal content", err)
-			return
-		}
-		if state.Ball != nil {
-			log.Infof("The ball (%d, %d) is moving (up: %t, left: %t)",state.Ball.X, state.Ball.Y, state.Ball.Up, state.Ball.Left)
-		}
+		GameUpdate(event.Message)
 	default:
 		log.Info("Unknown chan")
 	}
