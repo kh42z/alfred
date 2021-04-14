@@ -43,7 +43,6 @@ func (b *Bot) twoFactorSignIn(code string) {
 		log.Fatal("Unable to authentifcate: ", resp.StatusCode)
 	}
 	body, err := ioutil.ReadAll(resp.Body)
-	log.Infof("BODY [%s]", body);
 	if err != nil {
 		log.Fatal("Unable to read body: ", err)
 	}
