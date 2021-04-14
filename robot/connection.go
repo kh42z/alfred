@@ -32,6 +32,7 @@ func (b *Bot) twoFactorSignIn(code string) {
 		var err error
 		resp, err = http.Get(url)
 		if err != nil {
+			log.Infof("Waiting for API to be up and running at %s", url)
 			time.Sleep(10 * time.Second)
 		}else{
 			break
@@ -42,6 +43,7 @@ func (b *Bot) twoFactorSignIn(code string) {
 		log.Fatal("Unable to authentifcate: ", resp.StatusCode)
 	}
 	body, err := ioutil.ReadAll(resp.Body)
+	log.Infof("BODY [%s]", body);
 	if err != nil {
 		log.Fatal("Unable to read body: ", err)
 	}

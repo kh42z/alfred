@@ -25,12 +25,13 @@ func getEnv(key string, defaultVal string) string {
 func main() {
 	configLogger()
 	strUid := getEnv("ALFRED_UID", "1")
+	code := getEnv("ALFRED_CODE", "0000")
 	uid, err := strconv.Atoi(strUid)
 	if err != nil {
 		log.Fatal("Unable to cast uid to int:", err)
 	}
 	hal :=  robot.NewBot("pong:3000", uid)
-	hal.Start(os.Getenv("ALFRED_CODE"))
+	hal.Start(code)
 	hal.SubscribeUser(uid)
 	hal.SubscribeActivity()
 	hal.InitChatSubscriptions()

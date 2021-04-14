@@ -27,3 +27,7 @@ func (b *Bot) ChatResponse(e []byte, chatroomID int) {
 		sendChatResponse(b.sendCh, chatroomID)
 	}
 }
+
+func sendChatResponse(msg chan *Message, id int) {
+	msg <- formatChatMessage("ChatChannel", id)
+}

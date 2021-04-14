@@ -11,7 +11,7 @@ type UserEvent struct {
 }
 
 func (b *Bot) UserNotification(e []byte) {
-	log.Info("I received a personnal event!")
+	log.Debug("I received a personnal event!")
 	var personnalEvent UserEvent
 	err := json.Unmarshal(e, &personnalEvent)
 	if err != nil {
