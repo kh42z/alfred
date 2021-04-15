@@ -16,10 +16,10 @@ type Chat struct {
 
 func (b *Bot) connect(code string) {
 	b.twoFactorSignIn(code)
-	req,_ := http.NewRequest("GET", "http://" + b.host, nil)
-	b.api.setReqHeaders(req, b.host)
+	req, _ := http.NewRequest("GET", "http://"+b.api.host, nil)
+	b.api.setReqHeaders(req, b.api.host)
 	var err error
-	b.ws, _, err = websocket.DefaultDialer.Dial("ws://" + b.host + "/cable", req.Header)
+	b.ws, _, err = websocket.DefaultDialer.Dial("ws://"+b.api.host+"/cable", req.Header)
 	if err != nil {
 		log.Fatal("Unable to connect to websocket:", err)
 	}
@@ -27,14 +27,14 @@ func (b *Bot) connect(code string) {
 
 func (b *Bot) twoFactorSignIn(code string) {
 	var resp *http.Response
-	url := fmt.Sprintf("http://%s/two_factor/%d/?code=%s" , b.host, b.api.UserID, code)
+	url := fmt.Sprintf("http://%s/two_factor/%d/?code=%s", b.api.host, b.api.UserID, code)
 	for {
 		var err error
 		resp, err = http.Get(url)
 		if err != nil {
 			log.Infof("Waiting for API to be up and running at %s", url)
 			time.Sleep(10 * time.Second)
-		}else{
+		} else {
 			break
 		}
 	}
@@ -53,7 +53,7 @@ func (b *Bot) twoFactorSignIn(code string) {
 }
 
 func (b *Bot) retrieveSubscriptions() []*Chat {
-	body, err := b.api.DoGet(b.host, fmt.Sprintf("/chats?participant_id=%b", b.api.UserID))
+	body, err := b.api.DoGet(fmt.Sprintf("/chats?participant_id=%b", b.api.UserID))
 	if err != nil {
 		log.Fatal("Unable to retrieve chatrooms subscriptions", err)
 	}

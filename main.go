@@ -10,7 +10,7 @@ import (
 
 func configLogger() {
 	log.SetFormatter(&nested.Formatter{
-		HideKeys:    true,
+		HideKeys:        true,
 		TimestampFormat: "[15:04:05]",
 	})
 }
@@ -30,7 +30,7 @@ func main() {
 	if err != nil {
 		log.Fatal("Unable to cast uid to int:", err)
 	}
-	hal :=  robot.NewBot("pong:3000", uid)
+	hal := robot.NewBot("pong:3000", uid)
 	hal.Start(code)
 	hal.UpdateNickname("Alfred")
 	hal.SubscribeUser(uid)

@@ -15,28 +15,27 @@ type Bot struct {
 	statsCh chan bool
 	api     *PongAPI
 	wg      *sync.WaitGroup
-	host    string
 }
 
 type Message struct {
-	Command    string            `json:"command"`
-	Data       string   		 `json:"data,omitempty"`
-	Identifier string			 `json:"identifier"`
+	Command    string `json:"command"`
+	Data       string `json:"data,omitempty"`
+	Identifier string `json:"identifier"`
 }
 
 type Command struct {
 	Channel string `json:"channel"`
-	ID int `json:"id"`
+	ID      int    `json:"id"`
 }
 
 type Event struct {
-	Message    json.RawMessage    `json:"message"`
-	Identifier string `json:"identifier"`
+	Message    json.RawMessage `json:"message"`
+	Identifier string          `json:"identifier"`
 }
 
 type Identifier struct {
 	Channel string `json:"channel"`
-	ID int `json:"id"`
+	ID      int    `json:"id"`
 }
 
 type onMessageFn func(*Event)
@@ -44,7 +43,7 @@ type onMessageFn func(*Event)
 func (b *Bot) receiveRoutine(onMessage onMessageFn) {
 	b.wg.Add(1)
 	for {
-		_, message,  err := b.ws.ReadMessage()
+		_, message, err := b.ws.ReadMessage()
 		if err != nil {
 			log.Fatal("Unable to rcv:", err)
 		}
@@ -57,16 +56,16 @@ func (b *Bot) receiveRoutine(onMessage onMessageFn) {
 		if t, ok := e["type"]; ok {
 			switch t {
 			case "welcome":
-				log.Infof("Connected to PongWebsocket")
+				log.Infof("Alfred at your service")
 			case "confirm_subscription":
-				log.Infof("Subscribed to %s", e["identifier"])
+				log.Infof("I'm listening, Sir: %s", e["identifier"])
 			case "ping":
 				b.pongCh <- true
 			default:
-				log.Info("rcv:",t,  string(message))
+				log.Warn("rcv:", t, string(message))
 			}
-		}else{
-			log.Debug("RawMessage:", string(message) )
+		} else {
+			log.Debug("RawMessage:", string(message))
 			var e Event
 			err := json.Unmarshal(message, &e)
 			if err != nil {
@@ -103,12 +102,12 @@ func (b *Bot) sendRoutine() {
 	b.wg.Add(1)
 	for {
 		select {
-		case m := <- b.sendCh:
+		case m := <-b.sendCh:
 			log.Debug("sent:", m)
 			if err := b.ws.WriteJSON(m); err != nil {
 				log.Error("Unable to send msg:", err)
 			}
-		case <- b.pongCh:
+		case <-b.pongCh:
 			if err := b.ws.WriteMessage(websocket.PongMessage, []byte{}); err != nil {
 				log.Error("Unable to send ping:", err)
 			}
@@ -118,13 +117,12 @@ func (b *Bot) sendRoutine() {
 
 func NewBot(host string, uid int) *Bot {
 	return &Bot{
-		host: host,
-		sendCh: make(chan *Message, 20),
-		rcvCh: make(chan *Message),
-		pongCh: make(chan bool),
+		sendCh:  make(chan *Message, 20),
+		rcvCh:   make(chan *Message),
+		pongCh:  make(chan bool),
 		statsCh: make(chan bool),
-		api: &PongAPI{ UserID: uid},
-		wg: &sync.WaitGroup{},
+		api:     &PongAPI{UserID: uid, host: host},
+		wg:      &sync.WaitGroup{},
 	}
 }
 

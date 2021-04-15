@@ -10,12 +10,12 @@ func (b *Bot) SubscribeUser(ID int) {
 }
 
 func (b *Bot) SubscribeGame(ID int) {
-	log.Info("I joined game_id [", ID, "]")
+	log.Debug("I joined game_id [", ID, "]")
 	b.sendCh <- formatSubscribeMessage("GameChannel", ID)
 }
 
 func (b *Bot) SubscribeActivity() {
-	log.Info("Subscribing to ActivtyChannel")
+	log.Debug("Subscribing to ActivtyChannel")
 	b.sendCh <- formatSubscribeMessage("ActivityChannel", 1)
 }
 

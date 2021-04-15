@@ -6,8 +6,8 @@ import (
 )
 
 type UserEvent struct {
-	ID int `json:"id"`
-	Action  string `json:"action"`
+	ID     int    `json:"id"`
+	Action string `json:"action"`
 }
 
 func (b *Bot) UserNotification(e []byte) {

@@ -8,14 +8,14 @@ import (
 func (b *Bot) SendMessage(channelName string, channelID int, content string) {
 	data, err := json.Marshal(Command{
 		Channel: channelName,
-		ID: channelID,
+		ID:      channelID,
 	})
 	if err != nil {
 		log.Fatal("Unable to marshal:", err)
 	}
 	b.sendCh <- &Message{
-		Command: "message",
+		Command:    "message",
 		Identifier: string(data),
-		Data: content,
+		Data:       content,
 	}
 }
