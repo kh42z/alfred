@@ -40,7 +40,7 @@ func (b *Bot) twoFactorSignIn(code string) {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
-		log.Fatal("Unable to authentifcate: ", resp.StatusCode)
+		log.Fatal("Unable to authenticate: ", resp.StatusCode)
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {

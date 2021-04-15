@@ -93,7 +93,7 @@ func (b *Bot) identifyChannel(event *Event) {
 	case "ActivityChannel":
 		ActivityUpdate(event.Message)
 	case "GameChannel":
-		GameUpdate(event.Message)
+		b.GameUpdate(event.Message, i.ID)
 	default:
 		log.Info("Unknown chan")
 	}
