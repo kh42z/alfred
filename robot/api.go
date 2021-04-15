@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	log "github.com/sirupsen/logrus"
 	"strconv"
+	"strings"
 )
 
 type PongAPI struct {
@@ -30,6 +32,24 @@ func (b *Bot) JoinGuild(guild_id int){
 	if name, ok := e["name"]; ok {
 		log.Info("I joined the guild [", name, "]")
 	}
+}
+
+func (b *Bot) UpdateNickname(name string){
+	url := fmt.Sprintf("http://%s/api/users/%d", b.host, b.api.UserID)
+	client := &http.Client{}
+	request, err := http.NewRequest(http.MethodPatch, url, strings.NewReader("{\"nickname\":\"Alfred\"}"))
+	if err != nil {
+		log.Error("Unable to build patch request ", err)
+		return
+	}
+	b.api.setReqHeaders(request, b.host)
+	response, err := client.Do(request)
+	if err != nil || response.StatusCode != 200 {
+		log.Warn("Unable to change nickname, unfortunate", err)
+		return
+	}
+	ioutil.ReadAll(response.Body)
+	response.Body.Close()
 }
 
 func (p *PongAPI)DoGet(host, target string) ([]byte, error) {

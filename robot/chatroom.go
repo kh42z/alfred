@@ -24,28 +24,12 @@ func (b *Bot) ChatResponse(e []byte, chatroomID int) {
 	}
 	log.Infof("I received a chatMessage > user_%d: [%s]", content.SenderID, content.Content)
 	if content.SenderID != b.api.UserID {
-		sendChatResponse(b.sendCh, chatroomID)
+		b.sendChatResponse(chatroomID)
 	}
 }
 
-func sendChatResponse(msg chan *Message, id int) {
-	msg <- formatChatMessage("ChatChannel", id)
-}
-
-func formatChatMessage(channel string, ID int) *Message {
-	data, err := json.Marshal(Command{
-		Channel: channel,
-		ID: ID,
-	})
-	if err != nil {
-		log.Fatal("Unable to marshal:", err)
-	}
+func (b *Bot) sendChatResponse(id int) {
 	m := ChatMessage{Message: "yes", Action: "received"}
 	msg, _ := json.Marshal(m)
-
-	return &Message{
-		Command: "message",
-		Identifier: string(data),
-		Data: string(msg),
-	}
+	b.SendMessage("ChatChannel", id, string(msg))
 }

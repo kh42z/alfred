@@ -36,28 +36,13 @@ func (b *Bot) GameUpdate(e []byte, channelID int) {
 		return
 	}
 	if state.Ball != nil {
-		log.Infof("The ball (%d, %d) is moving (up: %t, left: %t)",state.Ball.X, state.Ball.Y, state.Ball.Up, state.Ball.Left)
-		sendPaddlePos(b.sendCh, channelID, state.Ball.Y)
+		b.sendPaddlePos(channelID, state.Ball.Y)
 	}
 }
 
-func sendPaddlePos(msg chan *Message, channelID int, pos int ) {
-	msg <- formatGameMessage("GameChannel", channelID, pos)
-}
-
-func formatGameMessage(channel string, ID int, pos int) *Message {
-	data, err := json.Marshal(Command{
-		Channel: channel,
-		ID: ID,
-	})
-	if err != nil {
-		log.Fatal("Unable to marshal:", err)
-	}
+func (b *Bot) sendPaddlePos(channelID int, pos int ) {
 	m := GameMessage{Action: "received", Pos: pos}
 	msg, _ := json.Marshal(m)
-	return &Message{
-		Command: "message",
-		Identifier: string(data),
-		Data: string(msg),
-	}
+	b.SendMessage("GameChannel", channelID, string(msg))
 }
+

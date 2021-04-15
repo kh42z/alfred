@@ -1,6 +1,7 @@
 package robot
 
 import (
+	"encoding/json"
 	log "github.com/sirupsen/logrus"
 	"time"
 )
@@ -12,7 +13,9 @@ func (b *Bot)addMessage(event *Event){
 type sendMessageFn func()
 
 func (b *Bot) withWS() {
-	b.sendCh <- formatChatMessage("ChatChannel", 1)
+	m := ChatMessage{Message: "yes", Action: "received"}
+	msg, _ := json.Marshal(m)
+	b.SendMessage("ChatChannel", 1, string(msg))
 }
 
 func (b *Bot) withHTTP() {
