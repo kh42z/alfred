@@ -1,4 +1,4 @@
-package robot
+package p42ng
 
 import (
 	"encoding/json"
@@ -29,7 +29,7 @@ func (b *Bot) adminCmd(chatroomID int, cmdline string) {
 			b.sendUsage(chatroomID)
 			return
 		}
-		_, err := b.api.DoPost(fmt.Sprintf("{\"user_id\": %s, \"duration\": %s}", ss[1], ss[2]), fmt.Sprintf("/chats/%d/mutes", chatroomID))
+		_, err := b.Api.DoPost(fmt.Sprintf("{\"user_id\": %s, \"duration\": %s}", ss[1], ss[2]), fmt.Sprintf("/chats/%d/mutes", chatroomID))
 		if err != nil {
 			b.sendChatResponse(chatroomID, err.Error())
 		} else {
@@ -47,7 +47,7 @@ func (b *Bot) ChatResponse(e []byte, chatroomID int) {
 		log.Error("Unable to unmarshal content", err)
 		return
 	}
-	if content.SenderID == b.api.UserID {
+	if content.SenderID == b.Api.UserID {
 		return
 	}
 	log.Infof("I received a chatMessage > user_%d: [%s]", content.SenderID, content.Content)
@@ -61,5 +61,5 @@ func (b *Bot) ChatResponse(e []byte, chatroomID int) {
 func (b *Bot) sendChatResponse(id int, message string) {
 	m := ChatMessage{Message: message, Action: "received"}
 	msg, _ := json.Marshal(m)
-	b.SendMessage("ChatChannel", id, string(msg))
+	b.Ac.SendMessage("ChatChannel", id, string(msg))
 }

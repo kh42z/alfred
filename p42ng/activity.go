@@ -1,4 +1,4 @@
-package robot
+package p42ng
 
 import (
 	"encoding/json"
@@ -11,7 +11,7 @@ type ActivityMessage struct {
 	Status string `json:"status"`
 }
 
-func ActivityUpdate(e []byte) {
+func ActivityUpdate(e []byte, _ int) {
 	var activityMessage ActivityMessage
 	err := json.Unmarshal(e, &activityMessage)
 	if err != nil {

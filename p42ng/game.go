@@ -1,4 +1,4 @@
-package robot
+package p42ng
 
 import (
 	"encoding/json"
@@ -43,5 +43,5 @@ func (b *Bot) GameUpdate(e []byte, channelID int) {
 func (b *Bot) sendPaddlePos(channelID int, pos int) {
 	m := GameMessage{Action: "received", Pos: pos}
 	msg, _ := json.Marshal(m)
-	b.SendMessage("GameChannel", channelID, string(msg))
+	b.Ac.SendMessage("GameChannel", channelID, string(msg))
 }

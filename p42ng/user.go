@@ -1,4 +1,4 @@
-package robot
+package p42ng
 
 import (
 	"encoding/json"
@@ -10,13 +10,13 @@ type UserEvent struct {
 	Action string `json:"action"`
 }
 
-func (b *Bot) UserNotification(e []byte) {
+func (b *Bot) UserNotification(e []byte, _ int) {
 	log.Debug("I received a personnal event!")
-	var personnalEvent UserEvent
-	err := json.Unmarshal(e, &personnalEvent)
+	var personalEvent UserEvent
+	err := json.Unmarshal(e, &personalEvent)
 	if err != nil {
 		log.Error("Unable to unmarshal userchannel:", err)
 		return
 	}
-	b.subscribeOnEvent(&personnalEvent)
+	b.subscribeOnEvent(&personalEvent)
 }
