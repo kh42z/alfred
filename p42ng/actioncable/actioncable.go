@@ -13,6 +13,7 @@ type ActionCable struct {
 	rcvCh    chan *Message
 	sendCh   chan *Message
 	pongCh   chan bool
+	stopCh	 chan bool
 	channels map[string]OnEventFn
 }
 
@@ -21,6 +22,7 @@ func NewActionCable(host string, req *http.Request) *ActionCable {
 		sendCh:   make(chan *Message, 20),
 		rcvCh:    make(chan *Message),
 		pongCh:   make(chan bool),
+		stopCh:   make(chan bool),
 		channels: make(map[string]OnEventFn),
 		wg:      &sync.WaitGroup{},
 	}
@@ -39,5 +41,9 @@ func (ac *ActionCable) Start() {
 
 func (ac *ActionCable) Wait() {
 	ac.wg.Wait()
+}
+
+func (ac *ActionCable) Stop() {
+	ac.stopCh <- true
 	ac.ws.Close()
 }

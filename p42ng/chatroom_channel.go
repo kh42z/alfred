@@ -17,6 +17,7 @@ type MessageContent struct {
 	SenderID int    `json:"sender_id"`
 }
 
+
 func (b *Bot) sendUsage(chatRoomID int) {
 	b.sendChatResponse(chatRoomID, "!kick <user> <duration>\n")
 }
@@ -63,3 +64,5 @@ func (b *Bot) sendChatResponse(id int, message string) {
 	msg, _ := json.Marshal(m)
 	b.Ac.SendMessage("ChatChannel", id, string(msg))
 }
+
+

@@ -15,7 +15,8 @@ func (ac *ActionCable) receiveRoutine() {
 	for {
 		_, message, err := ac.ws.ReadMessage()
 		if err != nil {
-			log.Fatal("Unable to rcv:", err)
+			log.Debug("Unable to rcv:", err)
+			break
 		}
 		var e map[string]interface{}
 		err = json.Unmarshal(message, &e)
@@ -23,17 +24,8 @@ func (ac *ActionCable) receiveRoutine() {
 			log.Error("Unable to unmarshal rcv", err)
 			return
 		}
-		if t, ok := e["type"]; ok {
-			switch t {
-			case "welcome":
-				log.Infof("Alfred at your service")
-			case "confirm_subscription":
-				log.Infof("I'm listening, Sir: %s", e["identifier"])
-			case "ping":
-				ac.pongCh <- true
-			default:
-				log.Warn("rcv:", t, string(message))
-			}
+		if _, ok := e["type"]; ok {
+			ac.internalMessage(e)
 		} else {
 			var e Event
 			err := json.Unmarshal(message, &e)
@@ -43,5 +35,20 @@ func (ac *ActionCable) receiveRoutine() {
 			}
 			ac.dispatchChannel(&e)
 		}
+	}
+	ac.wg.Done()
+}
+
+func (ac *ActionCable) internalMessage(e map[string]interface{}) {
+
+	switch e["type"] {
+	case "welcome":
+		log.Debug("Connected to ActionCable")
+	case "confirm_subscription":
+		log.Debugf("I'm listening, Sir: %s", e["identifier"])
+	case "ping":
+		ac.pongCh <- true
+	default:
+		log.Warn("unknown internal type rcv:", e["type"])
 	}
 }

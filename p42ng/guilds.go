@@ -1,4 +1,4 @@
-package api
+package p42ng
 
 import (
 	"encoding/json"
@@ -6,13 +6,13 @@ import (
 	"strconv"
 )
 
-func (api *PongAPI) JoinGuild(guild_id int) {
-	_, err := api.DoPost(`{ "user_id": `+strconv.Itoa(api.UserID)+` }`, "/guilds/"+strconv.Itoa(guild_id)+"/members")
+func (b *Bot) JoinGuild(guild_id int) {
+	_, err := b.Api.DoPost(`{ "user_id": `+strconv.Itoa(b.Api.UserID)+` }`, "/guilds/"+strconv.Itoa(guild_id)+"/members")
 	if err != nil {
 		log.Error("Unable to join guild", err)
 		return
 	}
-	resp, err := api.DoGet("/guilds/" + strconv.Itoa(guild_id))
+	resp, err := b.Api.DoGet("/guilds/" + strconv.Itoa(guild_id))
 
 	if err != nil {
 		log.Warn("Unable to get Guild name", err)

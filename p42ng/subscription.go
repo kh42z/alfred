@@ -18,12 +18,12 @@ func (b *Bot) SubscribeGame(ID int) {
 
 func (b *Bot) SubscribeActivity() {
 	log.Debug("Subscribing to ActivtyChannel")
-	b.Ac.RegisterChannel("ActivityChannel", ActivityUpdate)
+	b.Ac.RegisterChannel("ActivityChannel", b.ActivityUpdate)
 	b.Ac.Subscribe("ActivityChannel", 1)
 }
 
 func (b *Bot) SubscribeChat(ID int) {
-	log.Debug("Subscribing to a ChatRoom")
+	log.Debug("Subscribing to ChatRoom ", ID)
 	b.Ac.RegisterChannel("ChatChannel", b.ChatResponse)
 	b.Ac.Subscribe("ChatChannel", ID)
 }
@@ -39,14 +39,14 @@ func (b *Bot) subscribeOnEvent(p *UserEvent) {
 	case "chat_invitation":
 		b.SubscribeChat(p.ID)
 	case "guild_invitation":
-		b.Api.JoinGuild(p.ID)
+		b.JoinGuild(p.ID)
 	default:
 		log.Info("SubscribeOnEvent: Unknown action")
 	}
 }
 
 func (b *Bot) SubscribeToChatRooms() {
-	for _, chat := range b.Api.GetChatRooms() {
+	for _, chat := range b.GetChatRooms() {
 		b.SubscribeChat(chat.ID)
 	}
 }
