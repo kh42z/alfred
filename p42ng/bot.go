@@ -22,6 +22,6 @@ func NewBot(host, code string, uid int, secure bool) *Bot {
 		wsHost = "ws://" + host
 	}
 	b := Bot{Api: api.NewAPI(httpHost, code, uid), users: make(map[int]string)}
-	b.Ac = actioncable.NewActionCable(wsHost, b.Api.GenerateAuthReq())
+	b.Ac = actioncable.NewActionCable(wsHost, b.Api.GenerateAuthHeaders())
 	return &b
 }

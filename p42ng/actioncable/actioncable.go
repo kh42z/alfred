@@ -17,7 +17,7 @@ type ActionCable struct {
 	channels map[string]OnEventFn
 }
 
-func NewActionCable(host string, req *http.Request) *ActionCable {
+func NewActionCable(host string, headers http.Header) *ActionCable {
 	ac := ActionCable{
 		sendCh:   make(chan *Message, 20),
 		rcvCh:    make(chan *Message),
@@ -27,7 +27,7 @@ func NewActionCable(host string, req *http.Request) *ActionCable {
 		wg:      &sync.WaitGroup{},
 	}
 	var err error
-	ac.ws, _, err = websocket.DefaultDialer.Dial(host+"/cable", req.Header)
+	ac.ws, _, err = websocket.DefaultDialer.Dial(host+"/cable", headers)
 	if err != nil {
 		log.Fatal("Unable to connect to websocket:", err)
 	}
@@ -44,6 +44,5 @@ func (ac *ActionCable) Wait() {
 }
 
 func (ac *ActionCable) Stop() {
-	ac.stopCh <- true
 	ac.ws.Close()
 }

@@ -5,7 +5,7 @@ import (
 )
 
 func (b *Bot) SubscribeUser(ID int) {
-	log.Debug("Subscribing to UserChannel")
+	log.Infof("Subscribing to UserChannel")
 	b.Ac.RegisterChannel("UserChannel", b.UserNotification)
 	b.Ac.Subscribe("UserChannel", ID)
 }

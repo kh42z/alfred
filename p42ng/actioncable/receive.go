@@ -36,6 +36,7 @@ func (ac *ActionCable) receiveRoutine() {
 			ac.dispatchChannel(&e)
 		}
 	}
+	ac.stopCh <- true
 	ac.wg.Done()
 }
 

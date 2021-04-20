@@ -37,8 +37,8 @@ func (p *PongAPI) setReqHeaders(req *http.Request) {
 	req.Header.Add("uid", p.Uid)
 }
 
-func (p *PongAPI) GenerateAuthReq() *http.Request {
+func (p *PongAPI) GenerateAuthHeaders() http.Header {
 	req, _ := http.NewRequest("GET", p.host, nil)
 	p.setReqHeaders(req)
-	return req
+	return req.Header
 }
