@@ -8,7 +8,6 @@ import (
 type Bot struct {
 	Api     *api.PongAPI
 	Ac *actioncable.ActionCable
-	users map[int]string
 }
 
 
@@ -21,7 +20,7 @@ func NewBot(host, code string, uid int, secure bool) *Bot {
 		httpHost = "http://" + host
 		wsHost = "ws://" + host
 	}
-	b := Bot{Api: api.NewAPI(httpHost, code, uid), users: make(map[int]string)}
+	b := Bot{Api: api.NewAPI(httpHost, code, uid)}
 	b.Ac = actioncable.NewActionCable(wsHost, b.Api.GenerateAuthHeaders())
 	return &b
 }

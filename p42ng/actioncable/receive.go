@@ -7,6 +7,7 @@ import (
 
 type Event struct {
 	Message    json.RawMessage `json:"message"`
+	Type	   string	       `json:"type"`
 	Identifier string          `json:"identifier"`
 }
 
@@ -18,21 +19,15 @@ func (ac *ActionCable) receiveRoutine() {
 			log.Debug("Unable to rcv:", err)
 			break
 		}
-		var e map[string]interface{}
+		var e Event
 		err = json.Unmarshal(message, &e)
 		if err != nil {
 			log.Error("Unable to unmarshal rcv", err)
 			return
 		}
-		if _, ok := e["type"]; ok {
-			ac.internalMessage(e)
+		if len(e.Type) > 0 {
+			ac.internalMessage(&e)
 		} else {
-			var e Event
-			err := json.Unmarshal(message, &e)
-			if err != nil {
-				log.Error("Unable to unmarshal Event:", err)
-				return
-			}
 			ac.dispatchChannel(&e)
 		}
 	}
@@ -40,16 +35,29 @@ func (ac *ActionCable) receiveRoutine() {
 	ac.wg.Done()
 }
 
-func (ac *ActionCable) internalMessage(e map[string]interface{}) {
+func (ac *ActionCable) internalMessage(e *Event) {
 
-	switch e["type"] {
+	switch e.Type {
 	case "welcome":
 		log.Debug("Connected to ActionCable")
+		ac.startCh <- true
 	case "confirm_subscription":
-		log.Debugf("I'm listening, Sir: %s", e["identifier"])
+		var i Identifier
+		err := json.Unmarshal([]byte(e.Identifier), &i)
+		if err != nil {
+			log.Warn("Unable to unmarshal Identifier", i)
+			return
+		}
+		for name, e := range ac.channels {
+			if name == i.Channel {
+				e.OnSubscription(i.ID)
+			}
+		}
+	case "disconnect":
+		log.Warn("We got disconnected.")
+		ac.startCh <- false
 	case "ping":
-		ac.pongCh <- true
 	default:
-		log.Warn("unknown internal type rcv:", e["type"])
+		log.Warn("unknown internal type rcv:", e.Type)
 	}
 }

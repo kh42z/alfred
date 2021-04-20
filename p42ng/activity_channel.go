@@ -11,18 +11,34 @@ type ActivityMessage struct {
 	Status string `json:"status"`
 }
 
-func (b *Bot) ActivityUpdate(e []byte, _ int) {
+type ActivityEvent struct {
+	users map[int]string
+	b *Bot
+}
+
+func (b *Bot) NewActivityEvent() *ActivityEvent {
+	return &ActivityEvent{
+		users: make(map[int]string),
+		b: b,
+	}
+}
+
+func (a *ActivityEvent) OnSubscription(_ int) {
+	log.Infof("I'm listening to Activity!")
+}
+
+func (a *ActivityEvent) OnMessage(e []byte, _ int){
 	var activityMessage ActivityMessage
 	err := json.Unmarshal(e, &activityMessage)
 	if err != nil {
 		log.Error("Unable to unmarshal content", err)
 		return
 	}
-	if _, ok := b.users[activityMessage.ID]; !ok {
-		b.users[activityMessage.ID] = b.RetrieveNickname(activityMessage.ID)
+	if _, ok := a.users[activityMessage.ID]; !ok {
+		a.users[activityMessage.ID] = a.b.RetrieveNickname(activityMessage.ID)
 	}
 	if activityMessage.Action == "user_update_status" {
-		log.Infof("Seems like [%s] status changed to <%s>", b.users[activityMessage.ID], activityMessage.Status)
+		log.Infof("Seems like [%s] status changed to <%s>", a.users[activityMessage.ID], activityMessage.Status)
 	}
 	//if activityMessage.Action == "user_update_status" && activityMessage.Status == "online" && activityMessage.ID != b.Api.UserID {
 	//	chatID, err := b.CreateDMChatroom(activityMessage.ID)
@@ -32,3 +48,4 @@ func (b *Bot) ActivityUpdate(e []byte, _ int) {
 	//	}
 	//}
 }
+

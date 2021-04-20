@@ -12,8 +12,13 @@ type Identifier struct {
 
 type OnEventFn func([]byte, int)
 
-func (ac *ActionCable) RegisterChannel(name string, fn OnEventFn) {
-	ac.channels[name] = fn
+type ChannelEvent interface {
+	 OnSubscription(int)
+	 OnMessage([]byte, int)
+}
+
+func (ac *ActionCable) RegisterChannel(name string, event ChannelEvent) {
+	ac.channels[name] = event
 }
 
 func (ac *ActionCable) dispatchChannel(event *Event) {
@@ -23,9 +28,9 @@ func (ac *ActionCable) dispatchChannel(event *Event) {
 		log.Error("Unable to unmarshal Identifier", i)
 		return
 	}
-	for name, fn := range ac.channels {
+	for name, e := range ac.channels {
 		if name == i.Channel {
-			fn(event.Message, i.ID)
+			e.OnMessage(event.Message, i.ID)
 		}
 	}
 }

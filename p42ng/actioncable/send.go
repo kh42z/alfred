@@ -2,7 +2,6 @@ package actioncable
 
 import (
 	"encoding/json"
-	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -40,10 +39,6 @@ func (ac *ActionCable) sendRoutine() {
 			log.Debug("sent:", m)
 			if err := ac.ws.WriteJSON(m); err != nil {
 				log.Error("Unable to send msg:", err)
-			}
-		case <-ac.pongCh:
-			if err := ac.ws.WriteMessage(websocket.PongMessage, []byte{}); err != nil {
-				log.Error("Unable to send ping:", err)
 			}
 		case <-ac.stopCh:
 			ac.wg.Done()

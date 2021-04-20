@@ -17,47 +17,62 @@ type MessageContent struct {
 	SenderID int    `json:"sender_id"`
 }
 
-
-func (b *Bot) sendUsage(chatRoomID int) {
-	b.sendChatResponse(chatRoomID, "!kick <user> <duration>\n")
+type ChatEvent struct {
+	b *Bot
 }
 
-func (b *Bot) adminCmd(chatroomID int, cmdline string) {
-	ss := strings.Split(cmdline, " ")
-	switch ss[0] {
-	case "kick":
-		if len(ss) < 2 {
-			b.sendUsage(chatroomID)
-			return
-		}
-		_, err := b.Api.DoPost(fmt.Sprintf("{\"user_id\": %s, \"duration\": %s}", ss[1], ss[2]), fmt.Sprintf("/chats/%d/mutes", chatroomID))
-		if err != nil {
-			b.sendChatResponse(chatroomID, err.Error())
-		} else {
-			b.sendChatResponse(chatroomID, fmt.Sprintf("Well, [%s] is muted for a while, Sir.", ss[1]))
-		}
-	default:
-		b.sendUsage(chatroomID)
+func (b *Bot) NewChatEvent() *ChatEvent {
+	return &ChatEvent{
+		b: b,
 	}
 }
 
-func (b *Bot) ChatResponse(e []byte, chatroomID int) {
+func (c *ChatEvent) OnSubscription(chatroomID int){
+	log.Infof("I joined the chatroom %d.", chatroomID)
+}
+
+func (c *ChatEvent) OnMessage(e []byte, chatroomID int){
 	var content MessageContent
 	err := json.Unmarshal(e, &content)
 	if err != nil {
 		log.Error("Unable to unmarshal content", err)
 		return
 	}
-	if content.SenderID == b.Api.UserID {
+	if content.SenderID == c.b.Api.UserID {
 		return
 	}
 	log.Infof("I received a chatMessage > user_%d: [%s]", content.SenderID, content.Content)
 	if len(content.Content) > 2 && content.Content[0] == '!' {
-		b.adminCmd(chatroomID, content.Content[1:])
+		c.adminCmd(chatroomID, content.Content[1:])
 	} else {
-		b.sendChatResponse(chatroomID, "yes")
+		c.b.sendChatResponse(chatroomID, "yes")
 	}
 }
+
+func (c *ChatEvent) sendUsage(chatRoomID int) {
+	c.b.sendChatResponse(chatRoomID, "!kick <user> <duration>\n")
+}
+
+func (c *ChatEvent) adminCmd(chatroomID int, cmdline string) {
+	ss := strings.Split(cmdline, " ")
+	switch ss[0] {
+	case "kick":
+		if len(ss) < 2 {
+			c.sendUsage(chatroomID)
+			return
+		}
+		_, err := c.b.Api.DoPost(fmt.Sprintf("{\"user_id\": %s, \"duration\": %s}", ss[1], ss[2]), fmt.Sprintf("/chats/%d/mutes", chatroomID))
+		if err != nil {
+			c.b.sendChatResponse(chatroomID, err.Error())
+		} else {
+			c.b.sendChatResponse(chatroomID, fmt.Sprintf("Well, [%s] is muted for a while, Sir.", ss[1]))
+		}
+	default:
+		c.sendUsage(chatroomID)
+	}
+}
+
+
 
 func (b *Bot) sendChatResponse(id int, message string) {
 	m := ChatMessage{Message: message, Action: "received"}

@@ -10,20 +10,18 @@ import (
 type ActionCable struct {
 	ws       *websocket.Conn
 	wg       *sync.WaitGroup
-	rcvCh    chan *Message
 	sendCh   chan *Message
-	pongCh   chan bool
-	stopCh	 chan bool
-	channels map[string]OnEventFn
+	stopCh   chan bool
+	startCh  chan bool
+	channels map[string]ChannelEvent
 }
 
 func NewActionCable(host string, headers http.Header) *ActionCable {
 	ac := ActionCable{
 		sendCh:   make(chan *Message, 20),
-		rcvCh:    make(chan *Message),
-		pongCh:   make(chan bool),
 		stopCh:   make(chan bool),
-		channels: make(map[string]OnEventFn),
+		startCh:  make(chan bool),
+		channels: make(map[string]ChannelEvent),
 		wg:      &sync.WaitGroup{},
 	}
 	var err error
@@ -37,6 +35,7 @@ func NewActionCable(host string, headers http.Header) *ActionCable {
 func (ac *ActionCable) Start() {
 	go ac.receiveRoutine()
 	go ac.sendRoutine()
+	<- ac.startCh
 }
 
 func (ac *ActionCable) Wait() {

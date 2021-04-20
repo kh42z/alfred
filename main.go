@@ -6,7 +6,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"os"
 	"os/signal"
-	"time"
 )
 
 func configLogger() {
@@ -39,7 +38,6 @@ func main() {
 	hal.Ac.Start()
 	log.Infof("Alfred at your service")
 	hal.UpdateNickname("Alfred")
-	time.Sleep(1 * time.Second)
 	hal.SubscribeUser(toInt(getEnv("ALFRED_UID", "1")))
 	hal.SubscribeActivity()
 	hal.SubscribeToChatRooms()

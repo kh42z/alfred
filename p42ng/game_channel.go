@@ -28,7 +28,19 @@ type GameState struct {
 	Ball        *Ball   `json:"ball"`
 }
 
-func (b *Bot) GameUpdate(e []byte, channelID int) {
+type GameEvent struct {
+	b *Bot
+}
+
+func (b *Bot) NewGameEvent() *GameEvent {
+	return &GameEvent{ b: b}
+}
+
+func (g *GameEvent) OnSubscription(channelID int){
+	log.Infof("Let's play this game [%d]", channelID)
+}
+
+func (g *GameEvent) OnMessage(e []byte, channelID int){
 	var state GameState
 	err := json.Unmarshal(e, &state)
 	if err != nil {
@@ -36,12 +48,12 @@ func (b *Bot) GameUpdate(e []byte, channelID int) {
 		return
 	}
 	if state.Ball != nil {
-		b.sendPaddlePos(channelID, state.Ball.Y)
+		g.sendPaddlePos(channelID, state.Ball.Y)
 	}
 }
 
-func (b *Bot) sendPaddlePos(channelID int, pos int) {
+func (g *GameEvent) sendPaddlePos(channelID int, pos int) {
 	m := GameMessage{Action: "received", Pos: pos}
 	msg, _ := json.Marshal(m)
-	b.Ac.SendMessage("GameChannel", channelID, string(msg))
+	g.b.Ac.SendMessage("GameChannel", channelID, string(msg))
 }
