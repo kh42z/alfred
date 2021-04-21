@@ -45,7 +45,7 @@ func (c *ChatEvent) OnMessage(e []byte, chatroomID int){
 	if len(content.Content) > 2 && content.Content[0] == '!' {
 		c.adminCmd(chatroomID, content.Content[1:])
 	} else {
-		c.b.sendChatResponse(chatroomID, "yes")
+		c.b.sendChatResponse(chatroomID, "Talking to me?")
 	}
 }
 
@@ -72,12 +72,20 @@ func (c *ChatEvent) adminCmd(chatroomID int, cmdline string) {
 	}
 }
 
-
-
 func (b *Bot) sendChatResponse(id int, message string) {
 	m := ChatMessage{Message: message, Action: "received"}
 	msg, _ := json.Marshal(m)
 	b.Ac.SendMessage("ChatChannel", id, string(msg))
 }
 
+func (b *Bot) SubscribeChat(ID int) {
+	log.Debug("Subscribing to ChatRoom ", ID)
+	b.Ac.RegisterChannel("ChatChannel", b.NewChatEvent())
+	b.Ac.Subscribe("ChatChannel", ID)
+}
 
+func (b *Bot) SubscribeToChatRooms() {
+	for _, chat := range b.GetChatRooms() {
+		b.SubscribeChat(chat.ID)
+	}
+}

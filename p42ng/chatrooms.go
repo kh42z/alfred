@@ -15,7 +15,7 @@ type Chat struct {
 }
 
 func (b *Bot) GetChatRooms() []*Chat {
-	body, err := b.Api.DoGet(fmt.Sprintf("/chats?participant_id=%b", b.Api.UserID))
+	body, err := b.Api.DoGet(fmt.Sprintf("/chats?participant_id=%d", b.Api.UserID))
 	if err != nil {
 		log.Fatal("Unable to retrieve chatrooms subscriptions", err)
 	}

@@ -34,3 +34,9 @@ func (u *UserEvent) OnMessage(e []byte, _ int) {
 	}
 	u.b.subscribeOnEvent(&personalEvent)
 }
+
+func (b *Bot) SubscribeUser(ID int) {
+	log.Debug("Subscribing to UserChannel")
+	b.Ac.RegisterChannel("UserChannel", b.NewUserEvent())
+	b.Ac.Subscribe("UserChannel", ID)
+}

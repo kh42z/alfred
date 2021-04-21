@@ -10,8 +10,6 @@ type Identifier struct {
 	ID      int    `json:"id"`
 }
 
-type OnEventFn func([]byte, int)
-
 type ChannelEvent interface {
 	 OnSubscription(int)
 	 OnMessage([]byte, int)

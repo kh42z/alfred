@@ -49,3 +49,8 @@ func (a *ActivityEvent) OnMessage(e []byte, _ int){
 	//}
 }
 
+func (b *Bot) SubscribeActivity() {
+	log.Debug("Subscribing to ActivtyChannel")
+	b.Ac.RegisterChannel("ActivityChannel", b.NewActivityEvent())
+	b.Ac.Subscribe("ActivityChannel", 1)
+}

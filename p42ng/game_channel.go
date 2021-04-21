@@ -57,3 +57,9 @@ func (g *GameEvent) sendPaddlePos(channelID int, pos int) {
 	msg, _ := json.Marshal(m)
 	g.b.Ac.SendMessage("GameChannel", channelID, string(msg))
 }
+
+func (b *Bot) SubscribeGame(ID int) {
+	log.Debug("I joined game_id [", ID, "]")
+	b.Ac.RegisterChannel("GameChannel", b.NewGameEvent())
+	b.Ac.Subscribe("GameChannel", ID)
+}

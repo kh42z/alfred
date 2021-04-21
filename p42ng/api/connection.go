@@ -6,7 +6,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
-	"time"
 )
 
 func (api *PongAPI) Connect(code string) {
@@ -16,20 +15,14 @@ func (api *PongAPI) Connect(code string) {
 func (api *PongAPI) twoFactorSignIn(code string) {
 	var resp *http.Response
 	url := fmt.Sprintf("%s/two_factor/%d/?code=%s", api.host, api.UserID, code)
-	log.Infof("Waiting for API to be up and running at %s", url)
-	for {
-		var err error
-		resp, err = http.Get(url)
-		if err != nil {
-			log.Infof("Waiting for API to be up and running at %s", url)
-			time.Sleep(10 * time.Second)
-		} else {
-			break
-		}
+	var err error
+	resp, err = http.Get(url)
+	if err != nil {
+		log.Fatalf("Connection refused: %s\n", api.host)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
-		log.Fatal("Unable to authenticate: ", resp.StatusCode)
+		log.Fatalf("Invalid response code (%d) with %s ", resp.StatusCode, url)
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
