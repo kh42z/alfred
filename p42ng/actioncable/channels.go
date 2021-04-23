@@ -11,8 +11,8 @@ type Identifier struct {
 }
 
 type ChannelEvent interface {
-	 OnSubscription(int)
-	 OnMessage([]byte, int)
+	OnSubscription(int)
+	OnMessage([]byte, int)
 }
 
 func (ac *ActionCable) RegisterChannel(name string, event ChannelEvent) {

@@ -32,7 +32,7 @@ func (u *UserEvent) OnMessage(e []byte, _ int) {
 		log.Error("Unable to unmarshal userchannel:", err)
 		return
 	}
-	u.b.subscribeOnEvent(&personalEvent)
+	u.b.OnUserChannelEvent(&personalEvent)
 }
 
 func (b *Bot) SubscribeUser(ID int) {

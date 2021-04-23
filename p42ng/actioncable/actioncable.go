@@ -2,7 +2,6 @@ package actioncable
 
 import (
 	"github.com/gorilla/websocket"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"sync"
 )
@@ -16,26 +15,26 @@ type ActionCable struct {
 	channels map[string]ChannelEvent
 }
 
-func NewActionCable(host string, headers http.Header) *ActionCable {
+func NewActionCable(host string, headers http.Header) (*ActionCable, error) {
 	ac := ActionCable{
 		sendCh:   make(chan *Message, 20),
 		stopCh:   make(chan bool),
 		startCh:  make(chan bool),
 		channels: make(map[string]ChannelEvent),
-		wg:      &sync.WaitGroup{},
+		wg:       &sync.WaitGroup{},
 	}
 	var err error
 	ac.ws, _, err = websocket.DefaultDialer.Dial(host+"/cable", headers)
 	if err != nil {
-		log.Fatal("Unable to connect to websocket:", err)
+		return nil, err
 	}
-	return &ac
+	return &ac, nil
 }
 
 func (ac *ActionCable) Start() {
 	go ac.receiveRoutine()
 	go ac.sendRoutine()
-	<- ac.startCh
+	<-ac.startCh
 }
 
 func (ac *ActionCable) Wait() {

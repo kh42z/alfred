@@ -33,14 +33,14 @@ type GameEvent struct {
 }
 
 func (b *Bot) NewGameEvent() *GameEvent {
-	return &GameEvent{ b: b}
+	return &GameEvent{b: b}
 }
 
-func (g *GameEvent) OnSubscription(channelID int){
+func (g *GameEvent) OnSubscription(channelID int) {
 	log.Infof("Let's play this game [%d]", channelID)
 }
 
-func (g *GameEvent) OnMessage(e []byte, channelID int){
+func (g *GameEvent) OnMessage(e []byte, channelID int) {
 	var state GameState
 	err := json.Unmarshal(e, &state)
 	if err != nil {

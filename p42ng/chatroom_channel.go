@@ -27,11 +27,11 @@ func (b *Bot) NewChatEvent() *ChatEvent {
 	}
 }
 
-func (c *ChatEvent) OnSubscription(chatroomID int){
+func (c *ChatEvent) OnSubscription(chatroomID int) {
 	log.Infof("I joined the chatroom %d.", chatroomID)
 }
 
-func (c *ChatEvent) OnMessage(e []byte, chatroomID int){
+func (c *ChatEvent) OnMessage(e []byte, chatroomID int) {
 	var content MessageContent
 	err := json.Unmarshal(e, &content)
 	if err != nil {
@@ -41,7 +41,7 @@ func (c *ChatEvent) OnMessage(e []byte, chatroomID int){
 	if content.SenderID == c.b.Api.UserID {
 		return
 	}
-	log.Infof("I received a chatMessage > user_%d: [%s]", content.SenderID, content.Content)
+	log.Infof("[%d] user_%d: [%s]", chatroomID, content.SenderID, content.Content)
 	if len(content.Content) > 2 && content.Content[0] == '!' {
 		c.adminCmd(chatroomID, content.Content[1:])
 	} else {

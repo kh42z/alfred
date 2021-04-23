@@ -15,7 +15,7 @@ func configLogger() {
 	})
 }
 
-func sigHandler(bot *p42ng.Bot ,sigCh chan os.Signal) {
+func sigHandler(bot *p42ng.Bot, sigCh chan os.Signal) {
 	sig := <-sigCh
 	switch sig {
 	case os.Interrupt:
@@ -23,17 +23,19 @@ func sigHandler(bot *p42ng.Bot ,sigCh chan os.Signal) {
 	}
 }
 
-
 func main() {
 	configLogger()
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, os.Interrupt)
 
-	hal := p42ng.NewBot(
+	hal, err := p42ng.NewBot(
 		getEnv("ALFRED_HOST", "pong:3000"),
 		getEnv("ALFRED_CODE", "0000"),
 		toInt(getEnv("ALFRED_UID", "1")),
 		toBool(getEnv("ALFRED_SSL", "false")))
+	if err != nil {
+		log.Fatal("Unable to create bot: ", err)
+	}
 	go sigHandler(hal, sigCh)
 	hal.Ac.Start()
 	log.Infof("Alfred at your service")

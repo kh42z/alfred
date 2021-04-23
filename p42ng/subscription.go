@@ -4,7 +4,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func (b *Bot) subscribeOnEvent(p *UserMessage) {
+func (b *Bot) OnUserChannelEvent(p *UserMessage) {
 	switch p.Action {
 	case "game_won":
 		log.Infof("I just won this game [%d]", p.ID)
@@ -16,7 +16,9 @@ func (b *Bot) subscribeOnEvent(p *UserMessage) {
 		b.SubscribeChat(p.ID)
 	case "guild_invitation":
 		b.JoinGuild(p.ID)
+	case "achievement_unlocked":
+		log.Infof("Seems like I have unlocked an achievement [%d]", p.ID)
 	default:
-		log.Info("SubscribeOnEvent: Unknown action")
+		log.Infof("I do not know how to react to this [%s]", p.Action)
 	}
 }

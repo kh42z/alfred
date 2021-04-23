@@ -7,11 +7,11 @@ import (
 )
 
 type Chat struct {
-	ID int `json:"id"`
-	Privacy string `json:"privacy"`
-	ParticipantIds []int `json:"participant_ids"`
-	OwnerId	int `json:"owner_id"`
-	Name string `json:"name"`
+	ID             int    `json:"id"`
+	Privacy        string `json:"privacy"`
+	ParticipantIds []int  `json:"participant_ids"`
+	OwnerId        int    `json:"owner_id"`
+	Name           string `json:"name"`
 }
 
 func (b *Bot) GetChatRooms() []*Chat {
@@ -31,10 +31,10 @@ func (b *Bot) GetChatRooms() []*Chat {
 func (b *Bot) CreateDMChatroom(invitedId int) (int, error) {
 	newChat := Chat{Privacy: "direct_message",
 		ParticipantIds: []int{invitedId},
-		OwnerId: b.Api.UserID,
+		OwnerId:        b.Api.UserID,
 	}
 	payload, _ := json.Marshal(newChat)
-	resp , err := b.Api.DoPost(string(payload), "/chats")
+	resp, err := b.Api.DoPost(string(payload), "/chats")
 	if err != nil {
 		log.Warn("Unable to create chatroom", err)
 		return 0, err

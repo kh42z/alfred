@@ -7,7 +7,7 @@ import (
 
 type Event struct {
 	Message    json.RawMessage `json:"message"`
-	Type	   string	       `json:"type"`
+	Type       string          `json:"type"`
 	Identifier string          `json:"identifier"`
 }
 
@@ -39,7 +39,6 @@ func (ac *ActionCable) internalMessage(e *Event) {
 
 	switch e.Type {
 	case "welcome":
-		log.Debug("Connected to ActionCable")
 		ac.startCh <- true
 	case "confirm_subscription":
 		var i Identifier
@@ -54,7 +53,6 @@ func (ac *ActionCable) internalMessage(e *Event) {
 			}
 		}
 	case "disconnect":
-		log.Warn("We got disconnected.")
 		ac.startCh <- false
 	case "ping":
 	default:
