@@ -2,6 +2,7 @@ package p42ng
 
 import (
 	"encoding/json"
+	"github.com/kh42z/actioncable"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -28,38 +29,36 @@ type GameState struct {
 	Ball        *Ball   `json:"ball"`
 }
 
-type GameEvent struct {
-	b *Bot
-}
+type GameEvent struct {}
 
 func (b *Bot) NewGameEvent() *GameEvent {
-	return &GameEvent{b: b}
+	return &GameEvent{}
 }
 
-func (g *GameEvent) OnSubscription(channelID int) {
+func (g *GameEvent) SubscriptionHandler(_ *actioncable.Client, channelID int) {
 	log.Infof("Let's play this game [%d]", channelID)
 }
 
-func (g *GameEvent) OnMessage(e []byte, channelID int) {
+func (g *GameEvent) MessageHandler(c *actioncable.Client, e []byte, channelID int) {
 	var state GameState
 	err := json.Unmarshal(e, &state)
 	if err != nil {
 		log.Error("Unable to unmarshal content", err)
 		return
 	}
-	if state.Ball != nil {
-		g.sendPaddlePos(channelID, state.Ball.Y)
+	if state.Ball != nil && state.Ball.X > 480 {
+		sendPaddlePos(c, channelID, state.Ball.Y)
 	}
 }
 
-func (g *GameEvent) sendPaddlePos(channelID int, pos int) {
+func sendPaddlePos(c *actioncable.Client, channelID int, pos int) {
 	m := GameMessage{Action: "received", Pos: pos}
 	msg, _ := json.Marshal(m)
-	g.b.Ac.SendMessage("GameChannel", channelID, string(msg))
+	c.SendMessage("GameChannel", channelID, string(msg))
 }
 
 func (b *Bot) SubscribeGame(ID int) {
 	log.Debug("I joined game_id [", ID, "]")
-	b.Ac.RegisterChannel("GameChannel", b.NewGameEvent())
+	b.Ac.AddChannelHandler("GameChannel", b.NewGameEvent())
 	b.Ac.Subscribe("GameChannel", ID)
 }

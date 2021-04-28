@@ -2,6 +2,7 @@ package p42ng
 
 import (
 	"encoding/json"
+	"github.com/kh42z/actioncable"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -20,11 +21,11 @@ func (b *Bot) NewUserEvent() *UserEvent {
 	}
 }
 
-func (u *UserEvent) OnSubscription(_ int) {
+func (u *UserEvent) SubscriptionHandler(_ *actioncable.Client, _ int) {
 	log.Info("I'm listening to my personnal event!")
 }
 
-func (u *UserEvent) OnMessage(e []byte, _ int) {
+func (u *UserEvent) MessageHandler(_ *actioncable.Client, e []byte, _ int) {
 	log.Debug("I received a personnal event!")
 	var personalEvent UserMessage
 	err := json.Unmarshal(e, &personalEvent)
@@ -37,6 +38,6 @@ func (u *UserEvent) OnMessage(e []byte, _ int) {
 
 func (b *Bot) SubscribeUser(ID int) {
 	log.Debug("Subscribing to UserChannel")
-	b.Ac.RegisterChannel("UserChannel", b.NewUserEvent())
+	b.Ac.AddChannelHandler("UserChannel", b.NewUserEvent())
 	b.Ac.Subscribe("UserChannel", ID)
 }

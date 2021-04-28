@@ -19,7 +19,9 @@ func sigHandler(bot *p42ng.Bot, sigCh chan os.Signal) {
 	sig := <-sigCh
 	switch sig {
 	case os.Interrupt:
-		bot.Ac.Stop()
+		if err := bot.Ws.Close(); err != nil {
+			log.Error("Unable to close websocket ", err)
+		}
 	}
 }
 
@@ -37,12 +39,16 @@ func main() {
 		log.Fatal("Unable to create bot: ", err)
 	}
 	go sigHandler(hal, sigCh)
-	hal.Ac.Start()
 	log.Infof("Alfred at your service")
 	hal.UpdateNickname("Alfred")
-	hal.SubscribeUser(toInt(getEnv("ALFRED_UID", "1")))
-	hal.SubscribeActivity()
-	hal.SubscribeToChatRooms()
-	hal.Ac.Wait()
+	go func() {
+		hal.SubscribeUser(60)
+		hal.SubscribeUser(toInt(getEnv("ALFRED_UID", "1")))
+		hal.SubscribeActivity()
+		hal.SubscribeToChatRooms()
+	}()
+	if err := hal.Ac.Run(); err != nil {
+		log.Error(err)
+	}
 	log.Info("Goodbye, Sir.")
 }

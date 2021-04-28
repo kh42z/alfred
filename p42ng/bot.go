@@ -1,13 +1,16 @@
 package p42ng
 
 import (
-	"alfred/p42ng/actioncable"
 	"alfred/p42ng/api"
+	"github.com/gorilla/websocket"
+	"github.com/kh42z/actioncable"
+	"net/http"
 )
 
 type Bot struct {
 	Api *api.PongAPI
-	Ac  *actioncable.ActionCable
+	Ac  *actioncable.Client
+	Ws *websocket.Conn
 }
 
 func NewBot(host, code string, uid int, secure bool) (*Bot, error) {
@@ -20,10 +23,20 @@ func NewBot(host, code string, uid int, secure bool) (*Bot, error) {
 		wsHost = "ws://" + host
 	}
 	b := Bot{Api: api.NewAPI(httpHost, code, uid)}
-	var err error
-	b.Ac, err = actioncable.NewActionCable(wsHost, b.Api.GenerateAuthHeaders())
+	ws, err := connectWebsocket(wsHost, b.Api.GenerateAuthHeaders())
 	if err != nil {
 		return nil, err
 	}
+	b.Ws = ws
+	b.Ac = actioncable.NewClient(b.Ws)
 	return &b, nil
+}
+
+
+func connectWebsocket(host string, headers http.Header) (*websocket.Conn, error) {
+	ws, _, err := websocket.DefaultDialer.Dial(host +"/cable", headers)
+	if err != nil {
+		return nil, err
+	}
+	return ws, nil
 }

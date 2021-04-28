@@ -3,6 +3,7 @@ package p42ng
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/kh42z/actioncable"
 	log "github.com/sirupsen/logrus"
 	"strings"
 )
@@ -27,11 +28,11 @@ func (b *Bot) NewChatEvent() *ChatEvent {
 	}
 }
 
-func (c *ChatEvent) OnSubscription(chatroomID int) {
+func (c *ChatEvent) SubscriptionHandler(_ *actioncable.Client, chatroomID int) {
 	log.Infof("I joined the chatroom %d.", chatroomID)
 }
 
-func (c *ChatEvent) OnMessage(e []byte, chatroomID int) {
+func (c *ChatEvent) MessageHandler(_ *actioncable.Client, e []byte, chatroomID int) {
 	var content MessageContent
 	err := json.Unmarshal(e, &content)
 	if err != nil {
@@ -80,7 +81,7 @@ func (b *Bot) sendChatResponse(id int, message string) {
 
 func (b *Bot) SubscribeChat(ID int) {
 	log.Debug("Subscribing to ChatRoom ", ID)
-	b.Ac.RegisterChannel("ChatChannel", b.NewChatEvent())
+	b.Ac.AddChannelHandler("ChatChannel", b.NewChatEvent())
 	b.Ac.Subscribe("ChatChannel", ID)
 }
 

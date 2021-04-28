@@ -2,6 +2,7 @@ package p42ng
 
 import (
 	"encoding/json"
+	"github.com/kh42z/actioncable"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -23,11 +24,11 @@ func (b *Bot) NewActivityEvent() *ActivityEvent {
 	}
 }
 
-func (a *ActivityEvent) OnSubscription(_ int) {
+func (a *ActivityEvent) SubscriptionHandler(_ *actioncable.Client, _ int) {
 	log.Infof("I'm listening to Activity!")
 }
 
-func (a *ActivityEvent) OnMessage(e []byte, _ int) {
+func (a *ActivityEvent) MessageHandler(_ *actioncable.Client, e []byte, _ int) {
 	var activityMessage ActivityMessage
 	err := json.Unmarshal(e, &activityMessage)
 	if err != nil {
@@ -43,7 +44,7 @@ func (a *ActivityEvent) OnMessage(e []byte, _ int) {
 }
 
 func (b *Bot) SubscribeActivity() {
-	log.Debug("Subscribing to ActivtyChannel")
-	b.Ac.RegisterChannel("ActivityChannel", b.NewActivityEvent())
+	log.Debug("Subscribing to ActivityChannel")
+	b.Ac.AddChannelHandler("ActivityChannel", b.NewActivityEvent())
 	b.Ac.Subscribe("ActivityChannel", 1)
 }
