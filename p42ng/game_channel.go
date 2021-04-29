@@ -29,7 +29,7 @@ type GameState struct {
 	Ball        *Ball   `json:"ball"`
 }
 
-type GameEvent struct {}
+type GameEvent struct{}
 
 func (b *Bot) NewGameEvent() *GameEvent {
 	return &GameEvent{}

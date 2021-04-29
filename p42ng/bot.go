@@ -10,7 +10,7 @@ import (
 type Bot struct {
 	Api *api.PongAPI
 	Ac  *actioncable.Client
-	Ws *websocket.Conn
+	Ws  *websocket.Conn
 }
 
 func NewBot(host, code string, uid int, secure bool) (*Bot, error) {
@@ -32,9 +32,8 @@ func NewBot(host, code string, uid int, secure bool) (*Bot, error) {
 	return &b, nil
 }
 
-
 func connectWebsocket(host string, headers http.Header) (*websocket.Conn, error) {
-	ws, _, err := websocket.DefaultDialer.Dial(host +"/cable", headers)
+	ws, _, err := websocket.DefaultDialer.Dial(host+"/cable", headers)
 	if err != nil {
 		return nil, err
 	}
