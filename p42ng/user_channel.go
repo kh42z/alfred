@@ -22,11 +22,11 @@ func (b *Bot) NewUserEvent() *UserEvent {
 }
 
 func (u *UserEvent) SubscriptionHandler(_ *actioncable.Client, _ int) {
-	log.Info("I'm listening to my personnal event!")
+	log.Info("I'm listening to my personal event!")
 }
 
 func (u *UserEvent) MessageHandler(_ *actioncable.Client, e []byte, _ int) {
-	log.Debug("I received a personnal event!")
+	log.Debug("I received a personal event!")
 	var personalEvent UserMessage
 	err := json.Unmarshal(e, &personalEvent)
 	if err != nil {
