@@ -69,7 +69,7 @@ func (c *ChatEvent) adminCmd(chatroomID int, cmdline string) {
 			c.b.sendChatResponse(chatroomID, fmt.Sprintf("Well, [%s] is muted for a while, Sir.", ss[1]))
 		}
 	case "alert":
-		if len(ss) < 1{
+		if len(ss) < 1 {
 			c.sendUsage(chatroomID)
 			return
 		}
