@@ -9,7 +9,7 @@ import (
 )
 
 type ChatMessage struct {
-	Message string `json:"message"`
+	Content string `json:"content"`
 	Action  string `json:"action"`
 }
 
@@ -46,7 +46,7 @@ func (c *ChatEvent) MessageHandler(_ *actioncable.Client, e []byte, chatroomID i
 	if len(content.Content) > 2 && content.Content[0] == '!' {
 		c.adminCmd(chatroomID, content.Content[1:])
 	} else {
-		c.b.sendChatResponse(chatroomID, "Talking to me?")
+		c.b.sendChatResponse(chatroomID, "Do you want to play, Sir?")
 	}
 }
 
@@ -68,13 +68,19 @@ func (c *ChatEvent) adminCmd(chatroomID int, cmdline string) {
 		} else {
 			c.b.sendChatResponse(chatroomID, fmt.Sprintf("Well, [%s] is muted for a while, Sir.", ss[1]))
 		}
+	case "alert":
+		if len(ss) < 1{
+			c.sendUsage(chatroomID)
+			return
+		}
+		c.b.sendChatResponse(chatroomID, "&lt")
 	default:
 		c.sendUsage(chatroomID)
 	}
 }
 
 func (b *Bot) sendChatResponse(id int, message string) {
-	m := ChatMessage{Message: message, Action: "received"}
+	m := ChatMessage{Content: message, Action: "received"}
 	msg, _ := json.Marshal(m)
 	b.Ac.SendMessage("ChatChannel", id, string(msg))
 }
