@@ -5,7 +5,6 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/kh42z/actioncable"
 	"net/http"
-	"time"
 )
 
 type Bot struct {
@@ -24,18 +23,10 @@ func NewBot(host, code string, uid int, secure bool) (*Bot, error) {
 		wsHost = "ws://" + host
 	}
 	b := Bot{Api: api.NewAPI(httpHost, code, uid)}
-	retry := 10
-	var ws *websocket.Conn
-	for retry > 0 {
-		var err error
-		ws, err = connectWebsocket(wsHost, b.Api.GenerateAuthHeaders())
-		if err != nil {
-			return nil, err
-		}
-		time.Sleep(10 * time.Second)
-		retry--
+	ws, err := connectWebsocket(wsHost, b.Api.GenerateAuthHeaders())
+	if err != nil {
+		return nil, err
 	}
-
 	b.Ws = ws
 	b.Ac = actioncable.NewClient(b.Ws)
 	return &b, nil
