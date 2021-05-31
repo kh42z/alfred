@@ -1,6 +1,6 @@
 # Alfred 
 
-Alfred is a quickly written Bot that can receive notifications, reply to your chats messages, or play Pong communicating with our [rails API](https://github.com/kh42z/p42ng) through websocket and http requests.
+Alfred is a quickly written Bot that can receive notifications, reply to your chats messages, or play Pong communicating with our [rails API](https://github.com/kh42z/p42ng).
 
 The idea was to be autonomous and never rely on front-end developpers.
 
